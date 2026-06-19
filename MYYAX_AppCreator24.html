@@ -1,0 +1,2406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>MYYAX</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  :root {
+    --azul-prof: #0B4F6C;
+    --azul-medio: #1B7FA6;
+    --azul-claro: #5DC1E0;
+    --celeste-bg: #EAF6FB;
+    --verde-ok: #2E9C5C;
+    --verde-bg: #E3F6EA;
+    --amber: #E8A23D;
+    --amber-bg: #FDF1DF;
+    --rojo: #D14B4B;
+    --rojo-bg: #FBE6E6;
+    --gris-txt: #4A5660;
+    --gris-claro: #8FA0AB;
+    --blanco: #FFFFFF;
+    --borde: #DCE7EC;
+    --sombra: 0 4px 14px rgba(11,79,108,0.08);
+  }
+
+  html, body {
+    font-family: 'Segoe UI', system-ui, Arial, sans-serif;
+    background: var(--celeste-bg);
+    color: var(--gris-txt);
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .app-shell {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--celeste-bg);
+    position: relative;
+    padding-bottom: 78px;
+  }
+
+  /* ============ TOPBAR ============ */
+  .topbar {
+    background: linear-gradient(135deg, var(--azul-prof) 0%, var(--azul-medio) 100%);
+    color: #fff;
+    padding: 16px 18px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    box-shadow: 0 4px 16px rgba(11,79,108,0.25);
+  }
+  .topbar .icono-pez { font-size: 26px; }
+  .topbar .titulos { flex: 1; }
+  .topbar h1 { font-size: 17px; font-weight: 800; letter-spacing: 0.2px; }
+  .topbar .subt { font-size: 11px; opacity: 0.85; font-weight: 500; }
+  .btn-back {
+    background: rgba(255,255,255,0.18);
+    border: none;
+    color: #fff;
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    font-size: 17px;
+    display: flex; align-items:center; justify-content:center;
+    cursor: pointer;
+  }
+  .btn-back:active { background: rgba(255,255,255,0.3); }
+  .hidden { display: none !important; }
+
+  /* ============ VISTAS ============ */
+  .vista { padding: 16px 16px 8px; animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  /* ============ MENU PRINCIPAL ============ */
+  .saludo-card {
+    background: linear-gradient(135deg, var(--azul-medio), var(--azul-claro));
+    border-radius: 20px;
+    padding: 18px 20px;
+    color: #fff;
+    margin-bottom: 18px;
+    box-shadow: var(--sombra);
+    position: relative;
+    overflow: hidden;
+  }
+  .saludo-card .deco { position:absolute; right:-10px; top:-10px; font-size:90px; opacity:0.15; }
+  .saludo-card h2 { font-size: 18px; font-weight: 800; margin-bottom: 4px; position:relative; z-index:2;}
+  .saludo-card p { font-size: 12.5px; opacity: 0.9; position:relative; z-index:2; }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .menu-item {
+    background: var(--blanco);
+    border-radius: 18px;
+    padding: 16px 12px;
+    text-align: center;
+    box-shadow: var(--sombra);
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+    position: relative;
+  }
+  .menu-item:active { transform: scale(0.96); }
+  .menu-item .mi-icono {
+    width: 52px; height: 52px;
+    border-radius: 16px;
+    display:flex; align-items:center; justify-content:center;
+    font-size: 26px;
+    margin: 0 auto 8px;
+  }
+  .menu-item .mi-label { font-size: 12.5px; font-weight: 700; color: var(--azul-prof); }
+  .menu-item .mi-badge {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: var(--rojo);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    border-radius: 8px;
+    padding: 1px 6px;
+    display: none;
+  }
+  .menu-item .mi-badge.activo { display: inline-block; }
+
+  /* colores por sección */
+  .ic-inicio    { background: #DCEEF7; color: var(--azul-medio); }
+  .ic-aliment   { background: #FCE9D6; color: #C8762B; }
+  .ic-agua      { background: #D6F0F7; color: #1B95B5; }
+  .ic-crecim    { background: #DFF3E2; color: #2E9C5C; }
+  .ic-alertas   { background: #FBE3E3; color: var(--rojo); }
+  .ic-salud     { background: #EAE3F7; color: #7D5BBE; }
+  .ic-reportes  { background: #E3E9F7; color: #4A5FC1; }
+  .ic-asistenc  { background: #FBF0D6; color: #C99A1F; }
+  .ic-contacto  { background: #E3F3EC; color: #2E9C7A; }
+  .ic-clima     { background: #DCEEFB; color: #2D8FDB; }
+
+  /* ============ COMPONENTES COMUNES ============ */
+  .seccion-titulo {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--azul-prof);
+    letter-spacing: 0.3px;
+    margin: 18px 2px 10px;
+    text-transform: uppercase;
+  }
+  .seccion-titulo:first-child { margin-top: 0; }
+
+  .card {
+    background: var(--blanco);
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: var(--sombra);
+    margin-bottom: 14px;
+  }
+
+  .form-group { margin-bottom: 14px; }
+  .form-group label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--azul-prof);
+    margin-bottom: 6px;
+  }
+  .form-group .hint { font-size: 10.5px; color: var(--gris-claro); margin-top: 4px; font-weight: 500;}
+
+  input[type="number"], input[type="text"], input[type="date"], select, textarea {
+    width: 100%;
+    border: 1.5px solid var(--borde);
+    border-radius: 12px;
+    padding: 11px 13px;
+    font-size: 14.5px;
+    font-family: inherit;
+    color: var(--gris-txt);
+    background: #FBFDFE;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--azul-claro); }
+  textarea { resize: vertical; min-height: 70px; }
+
+  .input-unidad-wrap { position: relative; }
+  .input-unidad-wrap input { padding-right: 50px; }
+  .input-unidad {
+    position: absolute;
+    right: 13px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gris-claro);
+  }
+
+  .row-2 { display: flex; gap: 10px; }
+  .row-2 > div { flex: 1; }
+
+  .btn-primario {
+    width: 100%;
+    background: linear-gradient(135deg, var(--azul-medio), var(--azul-prof));
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 14.5px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 14px rgba(11,79,108,0.25);
+  }
+  .btn-primario:active { transform: scale(0.98); }
+  .btn-secundario {
+    width: 100%;
+    background: var(--blanco);
+    color: var(--azul-medio);
+    border: 1.5px solid var(--azul-claro);
+    border-radius: 14px;
+    padding: 12px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  .btn-secundario:active { background: var(--celeste-bg); }
+
+  .btn-peligro {
+    background: var(--rojo-bg);
+    color: var(--rojo);
+    border: 1.5px solid #F2C5C5;
+  }
+
+  /* ============ ESTADO BADGE ============ */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 800;
+  }
+  .badge-ok    { background: var(--verde-bg); color: var(--verde-ok); }
+  .badge-warn  { background: var(--amber-bg); color: var(--amber); }
+  .badge-bad   { background: var(--rojo-bg);  color: var(--rojo); }
+
+  /* ============ LISTA DE REGISTROS ============ */
+  .registro-item {
+    background: var(--blanco);
+    border-radius: 16px;
+    padding: 13px 15px;
+    margin-bottom: 10px;
+    box-shadow: var(--sombra);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .registro-item .ri-icono {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    display: flex; align-items:center; justify-content:center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .registro-item .ri-info { flex: 1; min-width:0; }
+  .registro-item .ri-titulo { font-size: 13.5px; font-weight: 700; color: var(--azul-prof); }
+  .registro-item .ri-detalle { font-size: 11.5px; color: var(--gris-claro); margin-top: 2px; }
+  .registro-item .ri-fecha { font-size: 10px; color: var(--gris-claro); white-space:nowrap; text-align:right; }
+  .registro-item .ri-borrar {
+    background: var(--rojo-bg);
+    color: var(--rojo);
+    border: none;
+    width: 28px; height:28px;
+    border-radius: 8px;
+    font-size: 13px;
+    flex-shrink:0;
+    cursor: pointer;
+  }
+
+  .vacio-msg {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--gris-claro);
+  }
+  .vacio-msg .vm-icono { font-size: 44px; margin-bottom: 10px; opacity:0.6; }
+  .vacio-msg p { font-size: 13px; font-weight: 600; }
+
+  /* ============ STATS ROW ============ */
+  .stats-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-mini {
+    flex: 1;
+    background: var(--blanco);
+    border-radius: 14px;
+    padding: 12px 8px;
+    text-align: center;
+    box-shadow: var(--sombra);
+  }
+  .stat-mini .sm-val { font-size: 19px; font-weight: 800; color: var(--azul-prof); }
+  .stat-mini .sm-lbl { font-size: 9.5px; color: var(--gris-claro); font-weight: 700; margin-top: 2px; text-transform:uppercase; }
+
+  /* ============ TABS ============ */
+  .tabs-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    background: var(--blanco);
+    border-radius: 14px;
+    padding: 4px;
+    box-shadow: var(--sombra);
+  }
+  .tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 9px 4px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gris-claro);
+    cursor: pointer;
+  }
+  .tab-btn.activo { background: var(--azul-medio); color: #fff; }
+
+  /* ============ BOTTOM NAV ============ */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--blanco);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 4px 10px;
+    box-shadow: 0 -4px 16px rgba(11,79,108,0.1);
+    z-index: 40;
+  }
+  .bn-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--gris-claro);
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 4px 6px;
+  }
+  .bn-item .bn-ico { font-size: 19px; }
+  .bn-item.activo { color: var(--azul-medio); }
+
+  /* ============ ALERTAS ============ */
+  .alerta-card {
+    border-radius: 16px;
+    padding: 13px 15px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .alerta-card.bad  { background: var(--rojo-bg);  border-left: 4px solid var(--rojo); }
+  .alerta-card.warn { background: var(--amber-bg); border-left: 4px solid var(--amber); }
+  .alerta-card.ok   { background: var(--verde-bg); border-left: 4px solid var(--verde-ok); }
+  .alerta-card .ac-ico { font-size: 22px; }
+  .alerta-card .ac-titulo { font-size: 13px; font-weight: 800; }
+  .alerta-card.bad .ac-titulo  { color: var(--rojo); }
+  .alerta-card.warn .ac-titulo { color: #B5791E; }
+  .alerta-card.ok .ac-titulo   { color: var(--verde-ok); }
+  .alerta-card .ac-detalle { font-size: 11.5px; color: var(--gris-txt); margin-top: 2px; }
+  .alerta-card .ac-fecha { font-size: 10px; color: var(--gris-claro); margin-top: 4px; }
+
+  /* ============ TOAST ============ */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--azul-prof);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    z-index: 100;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.activo { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.bad { background: var(--rojo); }
+
+  /* ============ INFO BOX ============ */
+  .info-box {
+    background: var(--celeste-bg);
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: var(--gris-txt);
+    margin-bottom: 14px;
+    line-height: 1.5;
+    border: 1px solid #D5E9F0;
+  }
+  .info-box strong { color: var(--azul-prof); }
+
+  /* ============ RANGO VISUAL (medidor) ============ */
+  .medidor {
+    margin-top: 8px;
+  }
+  .medidor-barra {
+    height: 8px;
+    border-radius: 6px;
+    background: linear-gradient(to right, var(--rojo) 0%, var(--amber) 25%, var(--verde-ok) 45%, var(--verde-ok) 65%, var(--amber) 80%, var(--rojo) 100%);
+    position: relative;
+  }
+  .medidor-punto {
+    position: absolute;
+    top: -3px;
+    width: 14px; height:14px;
+    background: #fff;
+    border: 3px solid var(--azul-prof);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  }
+  .medidor-labels { display:flex; justify-content:space-between; font-size:9px; color:var(--gris-claro); margin-top:4px; font-weight:600; }
+
+  /* ============ FAB (botón flotante agregar) ============ */
+  .fab {
+    position: fixed;
+    bottom: 86px;
+    right: 18px;
+    max-width: 480px;
+    width: 56px; height: 56px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--azul-medio), var(--azul-prof));
+    color: #fff;
+    border: none;
+    font-size: 26px;
+    box-shadow: 0 8px 20px rgba(11,79,108,0.35);
+    cursor: pointer;
+    z-index: 35;
+    display: flex; align-items:center; justify-content:center;
+  }
+  .fab:active { transform: scale(0.93); }
+
+  /* ============ TABLA simple reportes ============ */
+  .tabla-wrap { overflow-x: auto; border-radius: 14px; }
+  table.tabla-simple { width:100%; border-collapse: collapse; font-size: 12px; background:#fff; }
+  table.tabla-simple th {
+    background: var(--azul-prof); color:#fff; padding:9px 8px; text-align:left; font-weight:700; white-space:nowrap;
+  }
+  table.tabla-simple td { padding: 9px 8px; border-bottom: 1px solid var(--borde); white-space:nowrap; }
+  table.tabla-simple tr:last-child td { border-bottom:none; }
+
+  /* Checklist asistencia */
+  .check-item {
+    display:flex; align-items:center; gap:10px;
+    background:#fff; border-radius:14px; padding:12px 14px; margin-bottom:8px; box-shadow:var(--sombra);
+  }
+  .check-item input[type=checkbox] { width:20px; height:20px; accent-color: var(--azul-medio); }
+  .check-item .ci-txt { flex:1; font-size:13px; font-weight:600; }
+  .check-item .ci-txt small { display:block; font-size:10.5px; color:var(--gris-claro); font-weight:500; margin-top:2px; }
+
+  /* Contacto */
+  .contacto-item {
+    display:flex; align-items:center; gap:12px;
+    background:#fff; border-radius:16px; padding:14px; margin-bottom:10px; box-shadow:var(--sombra);
+  }
+  .contacto-item .co-ico {
+    width:46px; height:46px; border-radius:13px;
+    display:flex; align-items:center; justify-content:center; font-size:22px;
+    background:var(--celeste-bg);
+  }
+  .contacto-item .co-info { flex:1; }
+  .contacto-item .co-nombre { font-size:13.5px; font-weight:800; color:var(--azul-prof); }
+  .contacto-item .co-detalle { font-size:11.5px; color:var(--gris-claro); margin-top:1px; }
+  .contacto-item a.co-btn {
+    background: var(--azul-medio); color:#fff; border-radius:10px; padding:8px 14px; font-size:11.5px; font-weight:700;
+    text-decoration:none;
+  }
+
+  .credito-final {
+    text-align:center; font-size: 10px; color: var(--gris-claro); padding: 16px 10px 4px;
+  }
+
+  /* ============ BOTÓN COMPARTIR ============ */
+  .btn-compartir {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    background: var(--blanco);
+    color: var(--azul-medio);
+    border: 1.5px solid var(--azul-claro);
+    border-radius: 14px;
+    padding: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 14px;
+  }
+  .btn-compartir:active { background: var(--celeste-bg); }
+  .btn-compartir .ico { font-size: 16px; }
+</style>
+</head>
+<body>
+
+<div class="app-shell" id="appShell">
+
+  <!-- ============ TOPBAR ============ -->
+  <div class="topbar">
+    <button class="btn-back hidden" id="btnBack">←</button>
+    <span class="icono-pez">🐟</span>
+    <div class="titulos">
+      <h1 id="topTitulo">MYYAX</h1>
+      <div class="subt" id="topSubt">Conecta · Monitorea · Crece</div>
+    </div>
+  </div>
+
+  <!-- ============ CONTENEDOR DE VISTAS ============ -->
+  <div id="vistasContainer"></div>
+
+  <!-- ============ BOTTOM NAV ============ -->
+  <div class="bottom-nav">
+    <button class="bn-item activo" data-vista="inicio"><span class="bn-ico">🏠</span>Inicio</button>
+    <button class="bn-item" data-vista="alimentacion"><span class="bn-ico">🍽️</span>Alimentar</button>
+    <button class="bn-item" data-vista="agua"><span class="bn-ico">💧</span>Agua</button>
+    <button class="bn-item" data-vista="alertas"><span class="bn-ico">🔔</span>Alertas</button>
+    <button class="bn-item" data-vista="reportes"><span class="bn-ico">📊</span>Reportes</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════════════
+//  TRUCHAAPP — Lógica principal
+// ════════════════════════════════════════════════════════════════════════
+
+// Número de versión visible — úsalo para confirmar si tu dispositivo cargó
+// la última actualización del código (se muestra en la pantalla de Inicio)
+var APP_VERSION = 'v1.3 · WhatsApp directo';
+
+// ---------- Almacenamiento con fallback seguro ----------
+var memoria = {}; // fallback si localStorage no está disponible en el WebView
+var storageDisponible = true;
+try {
+  localStorage.setItem('__test__','1');
+  localStorage.removeItem('__test__');
+} catch(e){ storageDisponible = false; }
+
+function guardar(key, valor){
+  var str = JSON.stringify(valor);
+  if (storageDisponible) {
+    try { localStorage.setItem(key, str); } catch(e){ memoria[key] = str; }
+  } else {
+    memoria[key] = str;
+  }
+}
+function leer(key, porDefecto){
+  var str = null;
+  if (storageDisponible) {
+    try { str = localStorage.getItem(key); } catch(e){ str = memoria[key] || null; }
+  } else {
+    str = memoria[key] || null;
+  }
+  if (!str) return porDefecto;
+  try { return JSON.parse(str); } catch(e){ return porDefecto; }
+}
+
+function idUnico(){ return 'id' + Date.now() + Math.floor(Math.random()*1000); }
+
+function fechaHoy(){
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function fechaHoraTexto(iso){
+  var d = iso ? new Date(iso) : new Date();
+  var dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  return dias[d.getDay()] + ' ' + String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + ' · ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+function formatoFechaCorta(fechaISO){
+  if(!fechaISO) return '';
+  var p = fechaISO.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+// ---------- Rangos óptimos para trucha (referencia técnica) ----------
+var RANGOS = {
+  temperatura: { min:13, max:18, unidad:'°C', criticoMin:8, criticoMax:22 },
+  ph:          { min:6.5, max:8.5, unidad:'', criticoMin:5.5, criticoMax:9.5 },
+  oxigeno:     { min:7.5, max:12, unidad:'mg/L', criticoMin:5, criticoMax:15 }
+};
+
+function evaluarParametro(tipo, valor){
+  var r = RANGOS[tipo];
+  if (valor === null || valor === undefined || isNaN(valor)) return 'na';
+  if (valor < r.criticoMin || valor > r.criticoMax) return 'bad';
+  if (valor < r.min || valor > r.max) return 'warn';
+  return 'ok';
+}
+
+// ---------- Toast ----------
+var toastEl = document.getElementById('toast');
+var toastTimer;
+function mostrarToast(msg, tipo){
+  clearTimeout(toastTimer);
+  toastEl.textContent = msg;
+  toastEl.className = 'toast activo' + (tipo === 'bad' ? ' bad' : '');
+  toastTimer = setTimeout(function(){ toastEl.className = 'toast'; }, 2200);
+}
+
+// ---------- Confirmación simple (reemplaza confirm() nativo poco confiable en WebViews) ----------
+function confirmarAccion(mensaje, callback){
+  // Usamos confirm nativo; si falla (algunos WebView lo bloquean), ejecutamos directo
+  var ok = true;
+  try { ok = window.confirm(mensaje); } catch(e){ ok = true; }
+  if (ok) callback();
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  COMPARTIR (texto nativo / imagen tipo tarjeta)
+// ════════════════════════════════════════════════════════════════════════
+
+// Comparte texto plano usando el menú nativo del sistema (WhatsApp, Facebook, etc.)
+// Si el navegador/WebView no soporta Web Share API, copia el texto al portapapeles.
+function compartirTexto(titulo, texto){
+  if (navigator.share) {
+    navigator.share({ title: titulo, text: texto })
+      .catch(function(err){
+        // El usuario canceló el share sheet — no es un error real, no hacer nada
+        if (err && err.name !== 'AbortError') {
+          copiarAlPortapapeles(texto);
+        }
+      });
+  } else {
+    copiarAlPortapapeles(texto);
+  }
+}
+
+function copiarAlPortapapeles(texto){
+  var copiado = false;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      navigator.clipboard.writeText(texto);
+      copiado = true;
+    } catch(e){ copiado = false; }
+  }
+  if (!copiado) {
+    // Fallback universal: textarea temporal + execCommand
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = texto;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      copiado = true;
+    } catch(e){ copiado = false; }
+  }
+  mostrarToast(copiado ? '📋 Texto copiado — pégalo en WhatsApp o donde quieras' : 'No se pudo copiar el texto', copiado ? null : 'bad');
+}
+
+// Genera una tarjeta visual (PNG) en un <canvas> oculto y la comparte/descarga como imagen
+function compartirImagenTarjeta(opciones){
+  // opciones: { titulo, subtitulo, icono, color, filas: [{label, valor}], pie }
+  var ancho = 720, alto = 960;
+  var canvas = document.createElement('canvas');
+  canvas.width = ancho; canvas.height = alto;
+  var ctx = canvas.getContext('2d');
+
+  var colorPrincipal = opciones.color || '#1B7FA6';
+  var colorOscuro = opciones.colorOscuro || '#0B4F6C';
+
+  // Fondo degradado
+  var grad = ctx.createLinearGradient(0,0,0,alto);
+  grad.addColorStop(0, colorOscuro);
+  grad.addColorStop(1, colorPrincipal);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,ancho,alto);
+
+  // Header
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '700 54px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(opciones.icono || '🐟', ancho/2, 110);
+
+  ctx.font = '800 38px Arial';
+  ctx.fillText(opciones.titulo || 'MYYAX', ancho/2, 175);
+
+  ctx.font = '600 22px Arial';
+  ctx.globalAlpha = 0.85;
+  ctx.fillText(opciones.subtitulo || '', ancho/2, 210);
+  ctx.globalAlpha = 1;
+
+  // Caja blanca de contenido
+  var cajaY = 250, cajaAlto = alto - cajaY - 90;
+  ctx.fillStyle = '#ffffff';
+  redondearRect(ctx, 40, cajaY, ancho-80, cajaAlto, 28);
+  ctx.fill();
+
+  // Filas de datos
+  ctx.textAlign = 'left';
+  var filas = opciones.filas || [];
+  var filaAlto = Math.min(76, (cajaAlto - 50) / Math.max(filas.length,1));
+  var yPos = cajaY + 55;
+
+  filas.forEach(function(f, idx){
+    ctx.fillStyle = '#4A5660';
+    ctx.font = '600 24px Arial';
+    ctx.fillText(f.label, 75, yPos);
+
+    ctx.fillStyle = colorOscuro;
+    ctx.font = '800 28px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(String(f.valor), ancho-75, yPos);
+    ctx.textAlign = 'left';
+
+    if (idx < filas.length-1) {
+      ctx.strokeStyle = '#E5ECF0';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(75, yPos+22);
+      ctx.lineTo(ancho-75, yPos+22);
+      ctx.stroke();
+    }
+    yPos += filaAlto;
+  });
+
+  // Pie
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#ffffff';
+  ctx.globalAlpha = 0.8;
+  ctx.font = '600 18px Arial';
+  ctx.fillText(opciones.pie || ('Generado en MYYAX · ' + fechaHoraTexto()), ancho/2, alto-40);
+  ctx.globalAlpha = 1;
+
+  canvas.toBlob(function(blob){
+    if (!blob) { mostrarToast('No se pudo generar la imagen', 'bad'); return; }
+    var nombreArchivo = (opciones.archivoNombre || 'truchaapp_reporte') + '.png';
+    var file = new File([blob], nombreArchivo, { type: 'image/png' });
+
+    if (navigator.canShare && navigator.canShare({ files:[file] })) {
+      navigator.share({ files:[file], title: opciones.titulo || 'Reporte MYYAX' })
+        .catch(function(err){
+          if (err && err.name !== 'AbortError') descargarImagen(blob, nombreArchivo);
+        });
+    } else {
+      descargarImagen(blob, nombreArchivo);
+    }
+  }, 'image/png');
+}
+
+function descargarImagen(blob, nombreArchivo){
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = nombreArchivo;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  mostrarToast('🖼️ Imagen guardada — compártela desde tu galería');
+}
+
+function redondearRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+// Abre WhatsApp directamente con el texto ya cargado (no depende del menú nativo del sistema)
+function compartirWhatsApp(texto){
+  var url = 'https://wa.me/?text=' + encodeURIComponent(texto);
+  window.open(url, '_blank');
+}
+
+// Abre un selector simple (modal) para elegir Texto o Imagen al compartir
+function abrirMenuCompartir(datosTexto, datosImagen){
+  var existente = document.getElementById('modalCompartir');
+  if (existente) existente.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'modalCompartir';
+  modal.style.position = 'fixed';
+  modal.style.inset = '0';
+  modal.style.background = 'rgba(11,79,108,0.45)';
+  modal.style.zIndex = '200';
+  modal.style.display = 'flex';
+  modal.style.alignItems = 'flex-end';
+  modal.style.justifyContent = 'center';
+
+  modal.innerHTML =
+    '<div style="background:#fff;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:22px 20px 28px;box-shadow:0 -8px 30px rgba(0,0,0,0.2);">' +
+      '<div style="width:36px;height:4px;background:#DCE7EC;border-radius:4px;margin:0 auto 16px;"></div>' +
+      '<div style="font-size:15px;font-weight:800;color:#0B4F6C;text-align:center;margin-bottom:16px;">¿Cómo quieres compartir?</div>' +
+      '<button id="btnCompartirWhatsApp" style="width:100%;display:flex;align-items:center;gap:12px;background:#E7F9EE;border:none;border-radius:16px;padding:16px;margin-bottom:10px;cursor:pointer;text-align:left;">' +
+        '<span style="font-size:26px;">📲</span><span><strong style="display:block;font-size:14px;color:#1E6B3F;">WhatsApp directo</strong><span style="font-size:11.5px;color:#5C9C75;">Abre WhatsApp con el mensaje listo</span></span>' +
+      '</button>' +
+      '<button id="btnCompartirTexto" style="width:100%;display:flex;align-items:center;gap:12px;background:#EAF6FB;border:none;border-radius:16px;padding:16px;margin-bottom:10px;cursor:pointer;text-align:left;">' +
+        '<span style="font-size:26px;">💬</span><span><strong style="display:block;font-size:14px;color:#0B4F6C;">Otra app (texto)</strong><span style="font-size:11.5px;color:#8FA0AB;">SMS, Telegram, Messenger u otras</span></span>' +
+      '</button>' +
+      '<button id="btnCompartirImagen" style="width:100%;display:flex;align-items:center;gap:12px;background:#E3F6EA;border:none;border-radius:16px;padding:16px;margin-bottom:10px;cursor:pointer;text-align:left;">' +
+        '<span style="font-size:26px;">🖼️</span><span><strong style="display:block;font-size:14px;color:#0B4F6C;">Como imagen</strong><span style="font-size:11.5px;color:#8FA0AB;">Tarjeta visual para Facebook o Instagram</span></span>' +
+      '</button>' +
+      '<button id="btnCancelarCompartir" style="width:100%;background:none;border:none;padding:12px;color:#8FA0AB;font-weight:700;font-size:13px;cursor:pointer;">Cancelar</button>' +
+    '</div>';
+
+  document.body.appendChild(modal);
+
+  modal.addEventListener('click', function(e){ if (e.target === modal) modal.remove(); });
+  document.getElementById('btnCancelarCompartir').addEventListener('click', function(){ modal.remove(); });
+  document.getElementById('btnCompartirWhatsApp').addEventListener('click', function(){
+    modal.remove();
+    compartirWhatsApp(datosTexto.texto);
+  });
+  document.getElementById('btnCompartirTexto').addEventListener('click', function(){
+    modal.remove();
+    compartirTexto(datosTexto.titulo, datosTexto.texto);
+  });
+  document.getElementById('btnCompartirImagen').addEventListener('click', function(){
+    modal.remove();
+    compartirImagenTarjeta(datosImagen);
+  });
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  ESTADO GLOBAL Y NAVEGACIÓN
+// ════════════════════════════════════════════════════════════════════════
+var vistasContainer = document.getElementById('vistasContainer');
+var topTitulo = document.getElementById('topTitulo');
+var topSubt = document.getElementById('topSubt');
+var btnBack = document.getElementById('btnBack');
+var bottomNavItems = document.querySelectorAll('.bn-item');
+
+var VISTA_ACTUAL = 'inicio';
+
+var CONFIG_VISTAS = {
+  inicio:        { titulo:'MYYAX', subt:'Conecta · Monitorea · Crece', render: renderInicio },
+  alimentacion:  { titulo:'Alimentación', subt:'Registro de raciones', render: renderAlimentacion },
+  agua:          { titulo:'Calidad de agua', subt:'Monitoreo de parámetros', render: renderAgua },
+  crecimiento:   { titulo:'Crecimiento', subt:'Biometría de la población', render: renderCrecimiento },
+  alertas:       { titulo:'Alertas', subt:'Avisos automáticos', render: renderAlertas },
+  salud:         { titulo:'Salud de las truchas', subt:'Sanidad y mortalidad', render: renderSalud },
+  reportes:      { titulo:'Reportes', subt:'Resumen general', render: renderReportes },
+  asistencia:    { titulo:'Asistencia a prácticas', subt:'Control de tareas diarias', render: renderAsistencia },
+  contacto:      { titulo:'Contacto', subt:'Soporte y especialistas', render: renderContacto },
+  clima:         { titulo:'Clima', subt:'Pronóstico para la piscigranja', render: renderClima }
+};
+
+function irAVista(nombre){
+  VISTA_ACTUAL = nombre;
+  var cfg = CONFIG_VISTAS[nombre];
+  topTitulo.textContent = cfg.titulo;
+  topSubt.textContent = cfg.subt;
+  btnBack.classList.toggle('hidden', nombre === 'inicio');
+
+  bottomNavItems.forEach(function(btn){
+    btn.classList.toggle('activo', btn.dataset.vista === nombre);
+  });
+
+  vistasContainer.innerHTML = '';
+  var div = document.createElement('div');
+  div.className = 'vista';
+  div.id = 'vista-' + nombre;
+  vistasContainer.appendChild(div);
+  cfg.render(div);
+
+  window.scrollTo(0,0);
+}
+
+btnBack.addEventListener('click', function(){ irAVista('inicio'); });
+bottomNavItems.forEach(function(btn){
+  btn.addEventListener('click', function(){ irAVista(btn.dataset.vista); });
+});
+
+// Exponer función global usada por onclick inline en HTML generado dinámicamente
+window.TAPP = {
+  ir: irAVista,
+  guardar: guardar,
+  leer: leer,
+  idUnico: idUnico,
+  fechaHoy: fechaHoy,
+  fechaHoraTexto: fechaHoraTexto,
+  formatoFechaCorta: formatoFechaCorta,
+  evaluarParametro: evaluarParametro,
+  RANGOS: RANGOS,
+  toast: mostrarToast,
+  confirmar: confirmarAccion,
+  compartirMenu: abrirMenuCompartir,
+  compartirTexto: compartirTexto,
+  compartirImagen: compartirImagenTarjeta,
+  version: APP_VERSION
+};
+
+// ════════════════════════════════════════════════════════════════════════
+//  Se cargan los módulos de cada vista (definidos en archivos separados
+//  pero todos comparten este mismo scope gracias al hoisting de funciones
+//  al concatenar todos los archivos en un solo script)
+// ════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: INICIO  (menú principal)
+// ════════════════════════════════════════════════════════════════════════
+function renderInicio(cont){
+  var alertas = TAPP.leer('alertas', []);
+  var alertasActivas = alertas.filter(function(a){ return !a.resuelta; }).length;
+
+  var alimentaciones = TAPP.leer('alimentaciones', []);
+  var hoyStr = TAPP.fechaHoy();
+  var alimentadoHoy = alimentaciones.some(function(a){ return a.fecha === hoyStr; });
+
+  var registrosAgua = TAPP.leer('registrosAgua', []);
+  var ultimoAgua = registrosAgua.length ? registrosAgua[registrosAgua.length-1] : null;
+
+  var saludRegistros = TAPP.leer('saludRegistros', []);
+  var mortalidadHoy = saludRegistros.filter(function(s){ return s.fecha === hoyStr; })
+                                     .reduce(function(acc,s){ return acc + (s.mortalidad||0); }, 0);
+
+  var html = '';
+
+  html += '<div class="saludo-card">' +
+    '<span class="deco">🐟</span>' +
+    '<h2>¡Hola, piscicultor! 👋</h2>' +
+    '<p>' + (alertasActivas > 0
+      ? '⚠️ Tienes ' + alertasActivas + ' alerta' + (alertasActivas>1?'s':'') + ' sin resolver'
+      : '✅ Todo en orden por ahora') + '</p>' +
+  '</div>';html += '<div class="stats-row">' +
+    '<div class="stat-mini"><div class="sm-val">' + (alimentadoHoy ? '✅' : '⏳') + '</div><div class="sm-lbl">Alimentado hoy</div></div>' +
+    '<div class="stat-mini"><div class="sm-val">' + (ultimoAgua ? ultimoAgua.temperatura+'°' : '—') + '</div><div class="sm-lbl">Temp. agua</div></div>' +
+    '<div class="stat-mini"><div class="sm-val">' + mortalidadHoy + '</div><div class="sm-lbl">Mortalidad hoy</div></div>' +
+  '</div>';
+
+  var items = [
+    { v:'inicio',       ic:'🏠', cls:'ic-inicio',   label:'Inicio' },
+    { v:'alimentacion', ic:'🍽️', cls:'ic-aliment',  label:'Alimentación' },
+    { v:'agua',         ic:'💧', cls:'ic-agua',     label:'Calidad de agua' },
+    { v:'crecimiento',  ic:'📈', cls:'ic-crecim',   label:'Crecimiento' },
+    { v:'alertas',      ic:'🔔', cls:'ic-alertas',  label:'Alertas', badge: alertasActivas },
+    { v:'salud',        ic:'🩺', cls:'ic-salud',    label:'Salud de las truchas' },
+    { v:'reportes',     ic:'📊', cls:'ic-reportes', label:'Reportes' },
+    { v:'asistencia',   ic:'📋', cls:'ic-asistenc', label:'Asistencia prácticas' },
+    { v:'contacto',     ic:'📞', cls:'ic-contacto', label:'Contacto' },
+    { v:'clima',        ic:'⛅', cls:'ic-clima',    label:'Clima' }
+  ];
+
+  html += '<div class="seccion-titulo">Menú principal</div>';
+  html += '<div class="menu-grid">';
+  items.forEach(function(it){
+    html += '<div class="menu-item" data-go="' + it.v + '">' +
+      (it.badge ? '<span class="mi-badge activo">' + it.badge + '</span>' : '') +
+      '<div class="mi-icono ' + it.cls + '">' + it.ic + '</div>' +
+      '<div class="mi-label">' + it.label + '</div>' +
+    '</div>';
+  });
+  html += '</div>';
+
+  html += '<div class="credito-final">MYYAX · Conecta · Monitorea · Crece<br>Datos guardados en este dispositivo · ' + TAPP.version + '</div>';
+
+  cont.innerHTML = html;
+
+  cont.querySelectorAll('[data-go]').forEach(function(el){
+    el.addEventListener('click', function(){ TAPP.ir(el.dataset.go); });
+  });
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: ALIMENTACIÓN
+// ════════════════════════════════════════════════════════════════════════
+function renderAlimentacion(cont){
+  var registros = TAPP.leer('alimentaciones', []);
+
+  function totalHoy(){
+    var hoy = TAPP.fechaHoy();
+    return registros.filter(function(r){ return r.fecha === hoy; })
+                     .reduce(function(a,r){ return a + parseFloat(r.cantidad||0); }, 0);
+  }
+
+  var html = '';
+
+  html += '<div class="stats-row">' +
+    '<div class="stat-mini"><div class="sm-val">' + totalHoy().toFixed(1) + '</div><div class="sm-lbl">Kg hoy</div></div>' +
+    '<div class="stat-mini"><div class="sm-val">' + registros.length + '</div><div class="sm-lbl">Registros</div></div>' +
+  '</div>';
+
+  html += '<button class="btn-compartir" id="af-compartir"><span class="ico">📤</span> Compartir reporte de alimentación</button>';
+
+  html += '<div class="card">' +
+    '<div class="seccion-titulo" style="margin-top:0">Nuevo registro</div>' +
+    '<div class="form-group">' +
+      '<label>Fecha</label>' +
+      '<input type="date" id="af-fecha" value="' + TAPP.fechaHoy() + '">' +
+    '</div>' +
+    '<div class="row-2">' +
+      '<div class="form-group">' +
+        '<label>Hora</label>' +
+        '<select id="af-momento">' +
+          '<option value="Mañana">🌅 Mañana</option>' +
+          '<option value="Mediodía">☀️ Mediodía</option>' +
+          '<option value="Tarde">🌇 Tarde</option>' +
+        '</select>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label>Cantidad</label>' +
+        '<div class="input-unidad-wrap">' +
+          '<input type="number" step="0.1" min="0" id="af-cantidad" placeholder="0.0">' +
+          '<span class="input-unidad">kg</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Tipo de alimento</label>' +
+      '<select id="af-tipo">' +
+        '<option>Balanceado iniciador</option>' +
+        '<option>Balanceado crecimiento</option>' +
+        '<option>Balanceado engorde</option>' +
+        '<option>Alimento natural</option>' +
+        '<option>Otro</option>' +
+      '</select>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Observaciones (opcional)</label>' +
+      '<textarea id="af-obs" placeholder="Ej: las truchas comieron con apetito normal..."></textarea>' +
+    '</div>' +
+    '<button class="btn-primario" id="af-guardar">💾 Guardar registro</button>' +
+  '</div>';
+
+  html += '<div class="seccion-titulo">Historial</div>';
+  html += '<div id="af-lista"></div>';
+
+  cont.innerHTML = html;
+
+  function renderLista(){
+    var lista = document.getElementById('af-lista');
+    if (registros.length === 0) {
+      lista.innerHTML = '<div class="vacio-msg"><div class="vm-icono">🍽️</div><p>Aún no hay registros de alimentación</p></div>';
+      return;
+    }
+    var ordenados = registros.slice().sort(function(a,b){ return b.creado - a.creado; });
+    lista.innerHTML = ordenados.map(function(r){
+      return '<div class="registro-item">' +
+        '<div class="ri-icono" style="background:#FCE9D6;color:#C8762B;">🍽️</div>' +
+        '<div class="ri-info">' +
+          '<div class="ri-titulo">' + r.cantidad + ' kg · ' + r.tipo + '</div>' +
+          '<div class="ri-detalle">' + r.momento + (r.obs ? ' · ' + r.obs : '') + '</div>' +
+        '</div>' +
+        '<div class="ri-fecha">' + TAPP.formatoFechaCorta(r.fecha) + '</div>' +
+        '<button class="ri-borrar" data-del="' + r.id + '">✕</button>' +
+      '</div>';
+    }).join('');
+
+    lista.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        TAPP.confirmar('¿Eliminar este registro?', function(){
+          registros = registros.filter(function(r){ return r.id !== btn.dataset.del; });
+          TAPP.guardar('alimentaciones', registros);
+          TAPP.toast('Registro eliminado', 'bad');
+          renderAlimentacion(cont);
+        });
+      });
+    });
+  }
+
+  document.getElementById('af-compartir').addEventListener('click', function(){
+    var hoy = TAPP.fechaHoy();
+    var deHoy = registros.filter(function(r){ return r.fecha === hoy; });
+    var totalKgHoy = totalHoy().toFixed(1);
+
+    var textoLineas = ['🍽️ *Reporte de Alimentación — MYYAX*', ''];
+    textoLineas.push('📅 ' + TAPP.formatoFechaCorta(hoy));
+    textoLineas.push('Total suministrado hoy: ' + totalKgHoy + ' kg');
+    textoLineas.push('');
+    if (deHoy.length > 0) {
+      textoLineas.push('Detalle de hoy:');
+      deHoy.forEach(function(r){
+        textoLineas.push('• ' + r.momento + ': ' + r.cantidad + ' kg de ' + r.tipo);
+      });
+    } else {
+      textoLineas.push('(Sin registros de alimentación hoy todavía)');
+    }
+    textoLineas.push('');
+    textoLineas.push('Total histórico de registros: ' + registros.length);
+
+    var filasImagen = [
+      { label:'Total hoy', valor: totalKgHoy + ' kg' },
+      { label:'Registros hoy', valor: deHoy.length },
+      { label:'Registros totales', valor: registros.length }
+    ];
+    if (deHoy.length > 0) {
+      filasImagen.push({ label:'Último momento', valor: deHoy[deHoy.length-1].momento });
+      filasImagen.push({ label:'Tipo de alimento', valor: deHoy[deHoy.length-1].tipo });
+    }
+
+    TAPP.compartirMenu(
+      { titulo: 'Reporte de Alimentación', texto: textoLineas.join('\n') },
+      { titulo:'Alimentación', subtitulo: TAPP.formatoFechaCorta(hoy), icono:'🍽️',
+        color:'#E8A23D', colorOscuro:'#B5791E', filas: filasImagen, archivoNombre:'alimentacion' }
+    );
+  });
+
+  document.getElementById('af-guardar').addEventListener('click', function(){
+    var cantidad = parseFloat(document.getElementById('af-cantidad').value);
+    if (!cantidad || cantidad <= 0) {
+      TAPP.toast('Ingresa una cantidad válida', 'bad');
+      return;
+    }
+    var nuevo = {
+      id: TAPP.idUnico(),
+      fecha: document.getElementById('af-fecha').value || TAPP.fechaHoy(),
+      momento: document.getElementById('af-momento').value,
+      cantidad: cantidad,
+      tipo: document.getElementById('af-tipo').value,
+      obs: document.getElementById('af-obs').value.trim(),
+      creado: Date.now()
+    };
+    registros.push(nuevo);
+    TAPP.guardar('alimentaciones', registros);
+    TAPP.toast('✅ Alimentación registrada');
+    renderAlimentacion(cont);
+  });
+
+  renderLista();
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: CALIDAD DE AGUA
+// ════════════════════════════════════════════════════════════════════════
+function renderAgua(cont){
+  var registros = TAPP.leer('registrosAgua', []);
+  var R = TAPP.RANGOS;
+
+  function posicionMedidor(tipo, valor){
+    var r = R[tipo];
+    var rango = r.criticoMax - r.criticoMin;
+    var pos = ((valor - r.criticoMin) / rango) * 100;
+    return Math.max(2, Math.min(98, pos));
+  }
+
+  var html = '';
+
+  html += '<div class="info-box">💧 <strong>Rangos óptimos para trucha:</strong> Temperatura 13–18°C · pH 6.5–8.5 · Oxígeno disuelto 7.5–12 mg/L. Valores fuera de estos rangos generan alertas automáticas.</div>';
+
+  if (registros.length > 0) {
+    html += '<button class="btn-compartir" id="ag-compartir"><span class="ico">📤</span> Compartir última medición</button>';
+  }
+
+  html += '<div class="card">' +
+    '<div class="seccion-titulo" style="margin-top:0">Nueva medición</div>' +
+    '<div class="form-group">' +
+      '<label>Fecha</label>' +
+      '<input type="date" id="ag-fecha" value="' + TAPP.fechaHoy() + '">' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Estanque / Jaula</label>' +
+      '<input type="text" id="ag-estanque" placeholder="Ej: Estanque 1">' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Temperatura del agua</label>' +
+      '<div class="input-unidad-wrap"><input type="number" step="0.1" id="ag-temp" placeholder="15.0"><span class="input-unidad">°C</span></div>' +
+      '<div class="hint">Óptimo: 13 – 18 °C</div>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>pH</label>' +
+      '<div class="input-unidad-wrap"><input type="number" step="0.1" id="ag-ph" placeholder="7.5"><span class="input-unidad">pH</span></div>' +
+      '<div class="hint">Óptimo: 6.5 – 8.5</div>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Oxígeno disuelto</label>' +
+      '<div class="input-unidad-wrap"><input type="number" step="0.1" id="ag-oxigeno" placeholder="9.0"><span class="input-unidad">mg/L</span></div>' +
+      '<div class="hint">Óptimo: 7.5 – 12 mg/L</div>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Turbidez (opcional)</label>' +
+      '<select id="ag-turbidez">' +
+        '<option value="">No registrada</option>' +
+        '<option value="Clara">Clara / transparente</option>' +
+        '<option value="Ligeramente turbia">Ligeramente turbia</option>' +
+        '<option value="Turbia">Turbia</option>' +
+        '<option value="Muy turbia">Muy turbia</option>' +
+      '</select>' +
+    '</div>' +
+    '<button class="btn-primario" id="ag-guardar">💾 Guardar medición</button>' +
+  '</div>';
+
+  html += '<div class="seccion-titulo">Última medición</div>';
+  html += '<div id="ag-ultima"></div>';
+
+  html += '<div class="seccion-titulo">Historial</div>';
+  html += '<div id="ag-lista"></div>';
+
+  cont.innerHTML = html;
+
+  function badgeHTML(estado){
+    if (estado === 'ok')   return '<span class="badge badge-ok">✓ Óptimo</span>';
+    if (estado === 'warn') return '<span class="badge badge-warn">⚠ Alerta</span>';
+    if (estado === 'bad')  return '<span class="badge badge-bad">✕ Crítico</span>';
+    return '';
+  }
+
+  function medidorHTML(tipo, valor, etiqueta){
+    var r = R[tipo];
+    var pos = posicionMedidor(tipo, valor);
+    return '<div class="medidor">' +
+      '<div class="medidor-barra"><div class="medidor-punto" style="left:'+pos+'%"></div></div>' +
+      '<div class="medidor-labels"><span>' + r.criticoMin + r.unidad + '</span><span>Óptimo: ' + r.min + '-' + r.max + r.unidad + '</span><span>' + r.criticoMax + r.unidad + '</span></div>' +
+    '</div>';
+  }
+
+  function renderUltima(){
+    var elUltima = document.getElementById('ag-ultima');
+    if (registros.length === 0) {
+      elUltima.innerHTML = '<div class="vacio-msg"><div class="vm-icono">💧</div><p>Aún no hay mediciones registradas</p></div>';
+      return;
+    }
+    var u = registros.slice().sort(function(a,b){ return b.creado - a.creado; })[0];
+    var estTemp = TAPP.evaluarParametro('temperatura', u.temperatura);
+    var estPh = TAPP.evaluarParametro('ph', u.ph);
+    var estOxi = TAPP.evaluarParametro('oxigeno', u.oxigeno);
+
+    elUltima.innerHTML = '<div class="card">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
+        '<strong style="color:var(--azul-prof);font-size:13px;">' + (u.estanque || 'Sin nombre') + ' · ' + TAPP.formatoFechaCorta(u.fecha) + '</strong>' +
+      '</div>' +
+      '<div style="margin-bottom:14px;">' +
+        '<div style="display:flex;justify-content:space-between;"><span style="font-size:12.5px;font-weight:700;">🌡️ Temperatura: ' + u.temperatura + '°C</span>' + badgeHTML(estTemp) + '</div>' +
+        medidorHTML('temperatura', u.temperatura) +
+      '</div>' +
+      '<div style="margin-bottom:14px;">' +
+        '<div style="display:flex;justify-content:space-between;"><span style="font-size:12.5px;font-weight:700;">⚗️ pH: ' + u.ph + '</span>' + badgeHTML(estPh) + '</div>' +
+        medidorHTML('ph', u.ph) +
+      '</div>' +
+      '<div>' +
+        '<div style="display:flex;justify-content:space-between;"><span style="font-size:12.5px;font-weight:700;">🫧 Oxígeno: ' + u.oxigeno + ' mg/L</span>' + badgeHTML(estOxi) + '</div>' +
+        medidorHTML('oxigeno', u.oxigeno) +
+      '</div>' +
+      (u.turbidez ? '<div style="margin-top:12px;font-size:12px;color:var(--gris-claro);">Turbidez: <strong>' + u.turbidez + '</strong></div>' : '') +
+    '</div>';
+  }
+
+  function renderLista(){
+    var lista = document.getElementById('ag-lista');
+    if (registros.length === 0) {
+      lista.innerHTML = '';
+      return;
+    }
+    var ordenados = registros.slice().sort(function(a,b){ return b.creado - a.creado; });
+    lista.innerHTML = ordenados.map(function(r){
+      var estTemp = TAPP.evaluarParametro('temperatura', r.temperatura);
+      var estPh = TAPP.evaluarParametro('ph', r.ph);
+      var estOxi = TAPP.evaluarParametro('oxigeno', r.oxigeno);
+      var peor = [estTemp, estPh, estOxi].includes('bad') ? 'bad' : ([estTemp,estPh,estOxi].includes('warn') ? 'warn' : 'ok');
+      var colorFondo = peor === 'bad' ? '#FBE6E6' : (peor === 'warn' ? '#FDF1DF' : '#E3F6EA');
+      var colorTxt = peor === 'bad' ? 'var(--rojo)' : (peor === 'warn' ? 'var(--amber)' : 'var(--verde-ok)');
+      return '<div class="registro-item">' +
+        '<div class="ri-icono" style="background:'+colorFondo+';color:'+colorTxt+';">💧</div>' +
+        '<div class="ri-info">' +
+          '<div class="ri-titulo">' + r.temperatura + '°C · pH ' + r.ph + ' · O₂ ' + r.oxigeno + '</div>' +
+          '<div class="ri-detalle">' + (r.estanque || 'Sin nombre') + '</div>' +
+        '</div>' +
+        '<div class="ri-fecha">' + TAPP.formatoFechaCorta(r.fecha) + '</div>' +
+        '<button class="ri-borrar" data-del="' + r.id + '">✕</button>' +
+      '</div>';
+    }).join('');
+
+    lista.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        TAPP.confirmar('¿Eliminar esta medición?', function(){
+          registros = registros.filter(function(r){ return r.id !== btn.dataset.del; });
+          TAPP.guardar('registrosAgua', registros);
+          TAPP.toast('Medición eliminada', 'bad');
+          renderAgua(cont);
+        });
+      });
+    });
+  }
+
+  // Generar alertas automáticas si algún parámetro está fuera de rango
+  function generarAlertasSiCorresponde(registro){
+    var alertas = TAPP.leer('alertas', []);
+    var nuevasAlertas = [];
+
+    var checks = [
+      { tipo:'temperatura', valor:registro.temperatura, nombre:'Temperatura', unidad:'°C' },
+      { tipo:'ph',          valor:registro.ph,          nombre:'pH',          unidad:'' },
+      { tipo:'oxigeno',     valor:registro.oxigeno,     nombre:'Oxígeno disuelto', unidad:'mg/L' }
+    ];
+
+    checks.forEach(function(c){
+      var estado = TAPP.evaluarParametro(c.tipo, c.valor);
+      if (estado === 'bad' || estado === 'warn') {
+        nuevasAlertas.push({
+          id: TAPP.idUnico(),
+          tipo: estado === 'bad' ? 'bad' : 'warn',
+          titulo: (estado === 'bad' ? '🚨 Nivel crítico: ' : '⚠️ Fuera de rango: ') + c.nombre,
+          detalle: c.nombre + ' registrado en ' + (registro.estanque || 'estanque') + ': ' + c.valor + ' ' + c.unidad + '. ' +
+                   (estado === 'bad' ? 'Requiere atención inmediata.' : 'Revisar y monitorear de cerca.'),
+          origen: 'agua',
+          fecha: registro.fecha,
+          creado: Date.now(),
+          resuelta: false
+        });
+      }
+    });
+
+    if (nuevasAlertas.length > 0) {
+      alertas = alertas.concat(nuevasAlertas);
+      TAPP.guardar('alertas', alertas);
+    }
+    return nuevasAlertas.length;
+  }
+
+  document.getElementById('ag-guardar').addEventListener('click', function(){
+    var temp = parseFloat(document.getElementById('ag-temp').value);
+    var ph = parseFloat(document.getElementById('ag-ph').value);
+    var oxi = parseFloat(document.getElementById('ag-oxigeno').value);
+
+    if (isNaN(temp) || isNaN(ph) || isNaN(oxi)) {
+      TAPP.toast('Completa temperatura, pH y oxígeno', 'bad');
+      return;
+    }
+
+    var nuevo = {
+      id: TAPP.idUnico(),
+      fecha: document.getElementById('ag-fecha').value || TAPP.fechaHoy(),
+      estanque: document.getElementById('ag-estanque').value.trim(),
+      temperatura: temp,
+      ph: ph,
+      oxigeno: oxi,
+      turbidez: document.getElementById('ag-turbidez').value,
+      creado: Date.now()
+    };
+    registros.push(nuevo);
+    TAPP.guardar('registrosAgua', registros);
+
+    var nAlertas = generarAlertasSiCorresponde(nuevo);
+    if (nAlertas > 0) {
+      TAPP.toast('⚠️ Medición guardada con ' + nAlertas + ' alerta(s)', 'bad');
+    } else {
+      TAPP.toast('✅ Medición guardada — todo en rango óptimo');
+    }
+    renderAgua(cont);
+  });
+
+  renderUltima();
+  renderLista();
+
+  if (document.getElementById('ag-compartir')) {
+    document.getElementById('ag-compartir').addEventListener('click', function(){
+      var u = registros.slice().sort(function(a,b){ return b.creado-a.creado; })[0];
+      var estTemp = TAPP.evaluarParametro('temperatura', u.temperatura);
+      var estPh = TAPP.evaluarParametro('ph', u.ph);
+      var estOxi = TAPP.evaluarParametro('oxigeno', u.oxigeno);
+
+      function emojiEstado(e){ return e==='ok' ? '✅' : (e==='warn' ? '⚠️' : '🚨'); }
+
+      var texto = [
+        '💧 *Reporte de Calidad de Agua — MYYAX*', '',
+        '📍 ' + (u.estanque || 'Estanque sin nombre'),
+        '📅 ' + TAPP.formatoFechaCorta(u.fecha), '',
+        emojiEstado(estTemp) + ' Temperatura: ' + u.temperatura + '°C  (óptimo 13–18°C)',
+        emojiEstado(estPh) + ' pH: ' + u.ph + '  (óptimo 6.5–8.5)',
+        emojiEstado(estOxi) + ' Oxígeno disuelto: ' + u.oxigeno + ' mg/L  (óptimo 7.5–12 mg/L)'
+      ];
+      if (u.turbidez) texto.push('🔍 Turbidez: ' + u.turbidez);
+
+      var peorEstado = [estTemp,estPh,estOxi].includes('bad') ? 'bad' : ([estTemp,estPh,estOxi].includes('warn') ? 'warn' : 'ok');
+      var colorImg = peorEstado === 'bad' ? '#D14B4B' : (peorEstado === 'warn' ? '#E8A23D' : '#2E9C5C');
+      var colorImgOsc = peorEstado === 'bad' ? '#A83333' : (peorEstado === 'warn' ? '#B5791E' : '#1E6B3F');
+
+      TAPP.compartirMenu(
+        { titulo:'Reporte de Calidad de Agua', texto: texto.join('\n') },
+        { titulo:'Calidad de Agua', subtitulo:(u.estanque||'')+' · '+TAPP.formatoFechaCorta(u.fecha), icono:'💧',
+          color: colorImg, colorOscuro: colorImgOsc,
+          filas: [
+            { label:'Temperatura', valor: u.temperatura + '°C' },
+            { label:'pH', valor: u.ph },
+            { label:'Oxígeno disuelto', valor: u.oxigeno + ' mg/L' },
+            { label:'Estado general', valor: peorEstado==='ok'?'Óptimo ✓':(peorEstado==='warn'?'Alerta':'Crítico') }
+          ],
+          archivoNombre:'calidad_agua' }
+      );
+    });
+  }
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: CRECIMIENTO
+// ════════════════════════════════════════════════════════════════════════
+function renderCrecimiento(cont){
+  var registros = TAPP.leer('crecimientos', []);
+
+  var html = '';
+
+  function pesoPromedioUltimo(){
+    if (registros.length === 0) return '—';
+    var u = registros.slice().sort(function(a,b){ return b.creado-a.creado; })[0];
+    return u.pesoPromedio + ' g';
+  }
+  function gananciaPeso(){
+    var ord = registros.slice().sort(function(a,b){ return a.creado-b.creado; });
+    if (ord.length < 2) return '—';
+    var dif = ord[ord.length-1].pesoPromedio - ord[ord.length-2].pesoPromedio;
+    return (dif >= 0 ? '+' : '') + dif.toFixed(1) + ' g';
+  }
+
+  html += '<div class="stats-row">' +
+    '<div class="stat-mini"><div class="sm-val">' + pesoPromedioUltimo() + '</div><div class="sm-lbl">Peso promedio</div></div>' +
+    '<div class="stat-mini"><div class="sm-val">' + gananciaPeso() + '</div><div class="sm-lbl">Ganancia última</div></div>' +
+    '<div class="stat-mini"><div class="sm-val">' + registros.length + '</div><div class="sm-lbl">Muestreos</div></div>' +
+  '</div>';
+
+  if (registros.length > 0) {
+    html += '<button class="btn-compartir" id="cr-compartir"><span class="ico">📤</span> Compartir último muestreo</button>';
+  }
+
+  html += '<div class="card">' +
+    '<div class="seccion-titulo" style="margin-top:0">Nuevo muestreo</div>' +
+    '<div class="form-group">' +
+      '<label>Fecha</label>' +
+      '<input type="date" id="cr-fecha" value="' + TAPP.fechaHoy() + '">' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Estanque / Jaula</label>' +
+      '<input type="text" id="cr-estanque" placeholder="Ej: Estanque 1">' +
+    '</div>' +
+    '<div class="row-2">' +
+      '<div class="form-group">' +
+        '<label>N° de peces muestreados</label>' +
+        '<input type="number" min="1" id="cr-npeces" placeholder="20">' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label>Peso total muestra</label>' +
+        '<div class="input-unidad-wrap"><input type="number" step="0.1" id="cr-pesototal" placeholder="0.0"><span class="input-unidad">g</span></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="row-2">' +
+      '<div class="form-group">' +
+        '<label>Longitud promedio (opcional)</label>' +
+        '<div class="input-unidad-wrap"><input type="number" step="0.1" id="cr-longitud" placeholder="0.0"><span class="input-unidad">cm</span></div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label>Población total estimada</label>' +
+        '<input type="number" min="0" id="cr-poblacion" placeholder="500">' +
+      '</div>' +
+    '</div>' +
+    '<button class="btn-primario" id="cr-guardar">💾 Guardar muestreo</button>' +
+  '</div>';
+
+  html += '<div class="seccion-titulo">Historial de muestreos</div>';
+  html += '<div id="cr-lista"></div>';
+
+  cont.innerHTML = html;
+
+  function renderLista(){
+    var lista = document.getElementById('cr-lista');
+    if (registros.length === 0) {
+      lista.innerHTML = '<div class="vacio-msg"><div class="vm-icono">📈</div><p>Aún no hay muestreos de crecimiento</p></div>';
+      return;
+    }
+    var ordenados = registros.slice().sort(function(a,b){ return b.creado - a.creado; });
+    lista.innerHTML = ordenados.map(function(r){
+      return '<div class="registro-item">' +
+        '<div class="ri-icono" style="background:#DFF3E2;color:#2E9C5C;">📈</div>' +
+        '<div class="ri-info">' +
+          '<div class="ri-titulo">Peso prom. ' + r.pesoPromedio + ' g · ' + r.npeces + ' peces</div>' +
+          '<div class="ri-detalle">' + (r.estanque || 'Sin nombre') + (r.longitud ? ' · ' + r.longitud + ' cm' : '') + (r.poblacion ? ' · Población: ' + r.poblacion : '') + '</div>' +
+        '</div>' +
+        '<div class="ri-fecha">' + TAPP.formatoFechaCorta(r.fecha) + '</div>' +
+        '<button class="ri-borrar" data-del="' + r.id + '">✕</button>' +
+      '</div>';
+    }).join('');
+
+    lista.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        TAPP.confirmar('¿Eliminar este muestreo?', function(){
+          registros = registros.filter(function(r){ return r.id !== btn.dataset.del; });
+          TAPP.guardar('crecimientos', registros);
+          TAPP.toast('Muestreo eliminado', 'bad');
+          renderCrecimiento(cont);
+        });
+      });
+    });
+  }
+
+  document.getElementById('cr-guardar').addEventListener('click', function(){
+    var npeces = parseInt(document.getElementById('cr-npeces').value);
+    var pesoTotal = parseFloat(document.getElementById('cr-pesototal').value);
+
+    if (!npeces || npeces <= 0 || !pesoTotal || pesoTotal <= 0) {
+      TAPP.toast('Ingresa N° de peces y peso total válidos', 'bad');
+      return;
+    }
+
+    var pesoPromedio = pesoTotal / npeces;
+
+    var nuevo = {
+      id: TAPP.idUnico(),
+      fecha: document.getElementById('cr-fecha').value || TAPP.fechaHoy(),
+      estanque: document.getElementById('cr-estanque').value.trim(),
+      npeces: npeces,
+      pesoTotal: pesoTotal,
+      pesoPromedio: Math.round(pesoPromedio * 10) / 10,
+      longitud: parseFloat(document.getElementById('cr-longitud').value) || null,
+      poblacion: parseInt(document.getElementById('cr-poblacion').value) || null,
+      creado: Date.now()
+    };
+    registros.push(nuevo);
+    TAPP.guardar('crecimientos', registros);
+    TAPP.toast('✅ Muestreo guardado — peso prom. ' + nuevo.pesoPromedio + ' g');
+    renderCrecimiento(cont);
+  });
+
+  renderLista();
+
+  if (document.getElementById('cr-compartir')) {
+    document.getElementById('cr-compartir').addEventListener('click', function(){
+      var u = registros.slice().sort(function(a,b){ return b.creado-a.creado; })[0];
+      var texto = [
+        '📈 *Reporte de Crecimiento — MYYAX*', '',
+        '📍 ' + (u.estanque || 'Estanque sin nombre'),
+        '📅 ' + TAPP.formatoFechaCorta(u.fecha), '',
+        '⚖️ Peso promedio: ' + u.pesoPromedio + ' g',
+        '🐟 Peces muestreados: ' + u.npeces
+      ];
+      if (u.longitud) texto.push('📏 Longitud promedio: ' + u.longitud + ' cm');
+      if (u.poblacion) texto.push('🔢 Población estimada: ' + u.poblacion + ' peces');
+      texto.push('');
+      texto.push('Ganancia respecto a la medición anterior: ' + gananciaPeso());
+
+      var filasImg = [
+        { label:'Peso promedio', valor: u.pesoPromedio + ' g' },
+        { label:'Peces muestreados', valor: u.npeces },
+      ];
+      if (u.longitud) filasImg.push({ label:'Longitud prom.', valor: u.longitud + ' cm' });
+      if (u.poblacion) filasImg.push({ label:'Población estimada', valor: u.poblacion });
+      filasImg.push({ label:'Ganancia vs. anterior', valor: gananciaPeso() });
+
+      TAPP.compartirMenu(
+        { titulo:'Reporte de Crecimiento', texto: texto.join('\n') },
+        { titulo:'Crecimiento', subtitulo:(u.estanque||'')+' · '+TAPP.formatoFechaCorta(u.fecha), icono:'📈',
+          color:'#3FAE6B', colorOscuro:'#1E6B3F', filas: filasImg, archivoNombre:'crecimiento' }
+      );
+    });
+  }
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: ALERTAS
+// ════════════════════════════════════════════════════════════════════════
+function renderAlertas(cont){
+  var alertas = TAPP.leer('alertas', []);
+  var filtroActual = 'activas'; // activas | resueltas | todas
+
+  var html = '';
+
+  var activas = alertas.filter(function(a){ return !a.resuelta; });
+  var resueltas = alertas.filter(function(a){ return a.resuelta; });
+
+  html += '<div class="stats-row">' +
+    '<div class="stat-mini"><div class="sm-val" style="color:var(--rojo)">' + activas.filter(function(a){return a.tipo==='bad';}).length + '</div><div class="sm-lbl">Críticas</div></div>' +
+    '<div class="stat-mini"><div class="sm-val" style="color:var(--amber)">' + activas.filter(function(a){return a.tipo==='warn';}).length + '</div><div class="sm-lbl">Advertencias</div></div>' +
+    '<div class="stat-mini"><div class="sm-val" style="color:var(--verde-ok)">' + resueltas.length + '</div><div class="sm-lbl">Resueltas</div></div>' +
+  '</div>';
+
+  html += '<div class="card" style="padding:14px;">' +
+    '<div class="seccion-titulo" style="margin-top:0">Crear alerta manual</div>' +
+    '<div class="form-group">' +
+      '<label>Título</label>' +
+      '<input type="text" id="al-titulo" placeholder="Ej: Revisar válvula del estanque 2">' +
+    '</div>' +
+    '<div class="row-2">' +
+      '<div class="form-group">' +
+        '<label>Nivel</label>' +
+        '<select id="al-nivel">' +
+          '<option value="warn">⚠️ Advertencia</option>' +
+          '<option value="bad">🚨 Crítico</option>' +
+        '</select>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label>&nbsp;</label>' +
+        '<button class="btn-primario" id="al-crear" style="margin-top:0;">+ Agregar alerta</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+  html += '<div class="tabs-row" id="al-tabs">' +
+    '<button class="tab-btn activo" data-f="activas">Activas (' + activas.length + ')</button>' +
+    '<button class="tab-btn" data-f="resueltas">Resueltas (' + resueltas.length + ')</button>' +
+    '<button class="tab-btn" data-f="todas">Todas (' + alertas.length + ')</button>' +
+  '</div>';
+
+  if (activas.length > 0) {
+    html += '<button class="btn-compartir" id="al-compartir"><span class="ico">📤</span> Compartir alertas activas</button>';
+  }
+
+  html += '<div id="al-lista"></div>';
+
+  cont.innerHTML = html;
+
+  function iconoOrigen(origen){
+    if (origen === 'agua') return '💧';
+    if (origen === 'salud') return '🩺';
+    return '📌';
+  }
+
+  function renderLista(){
+    var lista = document.getElementById('al-lista');
+    var datos = alertas;
+    if (filtroActual === 'activas') datos = alertas.filter(function(a){ return !a.resuelta; });
+    if (filtroActual === 'resueltas') datos = alertas.filter(function(a){ return a.resuelta; });
+
+    if (datos.length === 0) {
+      var msg = filtroActual === 'activas' ? '✅ No hay alertas activas. ¡Todo en orden!' : 'No hay alertas en esta categoría';
+      lista.innerHTML = '<div class="vacio-msg"><div class="vm-icono">🔔</div><p>' + msg + '</p></div>';
+      return;
+    }
+
+    var ordenadas = datos.slice().sort(function(a,b){ return b.creado - a.creado; });
+    lista.innerHTML = ordenadas.map(function(a){
+      var claseTipo = a.resuelta ? 'ok' : a.tipo;
+      return '<div class="alerta-card ' + claseTipo + '">' +
+        '<div class="ac-ico">' + iconoOrigen(a.origen) + '</div>' +
+        '<div style="flex:1;">' +
+          '<div class="ac-titulo">' + a.titulo + (a.resuelta ? ' (resuelta)' : '') + '</div>' +
+          '<div class="ac-detalle">' + a.detalle + '</div>' +
+          '<div class="ac-fecha">' + TAPP.formatoFechaCorta(a.fecha) + '</div>' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:6px;">' +
+          (!a.resuelta ?
+            '<button data-resolver="' + a.id + '" style="background:var(--verde-ok);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;">✓</button>'
+            : '') +
+          '<button data-del="' + a.id + '" style="background:var(--rojo-bg);color:var(--rojo);border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;">✕</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    lista.querySelectorAll('[data-resolver]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        alertas = alertas.map(function(a){
+          if (a.id === btn.dataset.resolver) a.resuelta = true;
+          return a;
+        });
+        TAPP.guardar('alertas', alertas);
+        TAPP.toast('✅ Alerta marcada como resuelta');
+        renderAlertas(cont);
+      });
+    });
+    lista.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        TAPP.confirmar('¿Eliminar esta alerta?', function(){
+          alertas = alertas.filter(function(a){ return a.id !== btn.dataset.del; });
+          TAPP.guardar('alertas', alertas);
+          TAPP.toast('Alerta eliminada', 'bad');
+          renderAlertas(cont);
+        });
+      });
+    });
+  }
+
+  document.getElementById('al-tabs').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-f]');
+    if (!btn) return;
+    filtroActual = btn.dataset.f;
+    cont.querySelectorAll('#al-tabs .tab-btn').forEach(function(b){ b.classList.toggle('activo', b===btn); });
+    renderLista();
+  });
+
+  document.getElementById('al-crear').addEventListener('click', function(){
+    var titulo = document.getElementById('al-titulo').value.trim();
+    if (!titulo) { TAPP.toast('Escribe un título para la alerta', 'bad'); return; }
+    var nivel = document.getElementById('al-nivel').value;
+    var nueva = {
+      id: TAPP.idUnico(),
+      tipo: nivel,
+      titulo: (nivel === 'bad' ? '🚨 ' : '⚠️ ') + titulo,
+      detalle: 'Alerta creada manualmente por el usuario.',
+      origen: 'manual',
+      fecha: TAPP.fechaHoy(),
+      creado: Date.now(),
+      resuelta: false
+    };
+    alertas.push(nueva);
+    TAPP.guardar('alertas', alertas);
+    TAPP.toast('Alerta agregada');
+    renderAlertas(cont);
+  });
+
+  renderLista();
+
+  if (document.getElementById('al-compartir')) {
+    document.getElementById('al-compartir').addEventListener('click', function(){
+      var texto = ['🔔 *Alertas Activas — MYYAX*', '', '📅 ' + TAPP.formatoFechaCorta(TAPP.fechaHoy()), ''];
+      activas.slice().sort(function(a,b){return b.creado-a.creado;}).forEach(function(a){
+        texto.push((a.tipo==='bad'?'🚨':'⚠️') + ' ' + a.titulo);
+        texto.push('   ' + a.detalle);
+        texto.push('');
+      });
+      texto.push('Total: ' + activas.length + ' alerta(s) sin resolver');
+
+      var criticas = activas.filter(function(a){return a.tipo==='bad';}).length;
+      var advertencias = activas.filter(function(a){return a.tipo==='warn';}).length;
+
+      TAPP.compartirMenu(
+        { titulo:'Alertas Activas', texto: texto.join('\n') },
+        { titulo:'Alertas Activas', subtitulo: TAPP.formatoFechaCorta(TAPP.fechaHoy()), icono:'🔔',
+          color:'#D14B4B', colorOscuro:'#A83333',
+          filas: [
+            { label:'Críticas', valor: criticas },
+            { label:'Advertencias', valor: advertencias },
+            { label:'Total activas', valor: activas.length }
+          ],
+          archivoNombre:'alertas' }
+      );
+    });
+  }
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: SALUD DE LAS TRUCHAS
+// ════════════════════════════════════════════════════════════════════════
+function renderSalud(cont){
+  var registros = TAPP.leer('saludRegistros', []);
+
+  var html = '';
+
+  function mortalidadTotal(){
+    return registros.reduce(function(a,r){ return a + (r.mortalidad||0); }, 0);
+  }
+  function mortalidadMes(){
+    var hoy = new Date();
+    return registros.filter(function(r){
+      var f = new Date(r.fecha + 'T00:00:00');
+      return f.getMonth() === hoy.getMonth() && f.getFullYear() === hoy.getFullYear();
+    }).reduce(function(a,r){ return a + (r.mortalidad||0); }, 0);
+  }
+
+  html += '<div class="stats-row">' +
+    '<div class="stat-mini"><div class="sm-val">' + mortalidadTotal() + '</div><div class="sm-lbl">Mortalidad total</div></div>' +
+    '<div class="stat-mini"><div class="sm-val">' + mortalidadMes() + '</div><div class="sm-lbl">Este mes</div></div>' +
+    '<div class="stat-mini"><div class="sm-val">' + registros.length + '</div><div class="sm-lbl">Inspecciones</div></div>' +
+  '</div>';
+
+  if (registros.length > 0) {
+    html += '<button class="btn-compartir" id="sa-compartir"><span class="ico">📤</span> Compartir última inspección</button>';
+  }
+
+  html += '<div class="card">' +
+    '<div class="seccion-titulo" style="margin-top:0">Nueva inspección sanitaria</div>' +
+    '<div class="form-group">' +
+      '<label>Fecha</label>' +
+      '<input type="date" id="sa-fecha" value="' + TAPP.fechaHoy() + '">' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Estanque / Jaula</label>' +
+      '<input type="text" id="sa-estanque" placeholder="Ej: Estanque 1">' +
+    '</div>' +
+    '<div class="row-2">' +
+      '<div class="form-group">' +
+        '<label>Mortalidad registrada</label>' +
+        '<div class="input-unidad-wrap"><input type="number" min="0" id="sa-mortalidad" placeholder="0"><span class="input-unidad">peces</span></div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label>Comportamiento</label>' +
+        '<select id="sa-comportamiento">' +
+          '<option value="Normal">Normal</option>' +
+          '<option value="Letárgico">Letárgico</option>' +
+          '<option value="Nado errático">Nado errático</option>' +
+          '<option value="Boqueo en superficie">Boqueo en superficie</option>' +
+        '</select>' +
+      '</div>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Síntomas observados</label>' +
+      '<select id="sa-sintomas">' +
+        '<option value="Ninguno">Ninguno</option>' +
+        '<option value="Manchas en la piel">Manchas en la piel</option>' +
+        '<option value="Hongos / algodón blanco">Hongos / algodón blanco</option>' +
+        '<option value="Branquias pálidas">Branquias pálidas</option>' +
+        '<option value="Heridas o lesiones">Heridas o lesiones</option>' +
+        '<option value="Distensión abdominal">Distensión abdominal</option>' +
+        '<option value="Pérdida de apetito">Pérdida de apetito</option>' +
+        '<option value="Otro">Otro</option>' +
+      '</select>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Observaciones / Tratamiento aplicado</label>' +
+      '<textarea id="sa-obs" placeholder="Ej: se aplicó tratamiento con sal al 2%..."></textarea>' +
+    '</div>' +
+    '<button class="btn-primario" id="sa-guardar">💾 Guardar inspección</button>' +
+  '</div>';
+
+  html += '<div class="seccion-titulo">Historial sanitario</div>';
+  html += '<div id="sa-lista"></div>';
+
+  cont.innerHTML = html;
+
+  function renderLista(){
+    var lista = document.getElementById('sa-lista');
+    if (registros.length === 0) {
+      lista.innerHTML = '<div class="vacio-msg"><div class="vm-icono">🩺</div><p>Aún no hay inspecciones registradas</p></div>';
+      return;
+    }
+    var ordenados = registros.slice().sort(function(a,b){ return b.creado - a.creado; });
+    lista.innerHTML = ordenados.map(function(r){
+      var alerta = (r.mortalidad > 0 || r.sintomas !== 'Ninguno' || r.comportamiento !== 'Normal');
+      var bg = alerta ? '#FBE6E6' : '#EAE3F7';
+      var color = alerta ? 'var(--rojo)' : '#7D5BBE';
+      return '<div class="registro-item">' +
+        '<div class="ri-icono" style="background:'+bg+';color:'+color+';">🩺</div>' +
+        '<div class="ri-info">' +
+          '<div class="ri-titulo">' + (r.estanque || 'Sin nombre') + (r.mortalidad ? ' · ' + r.mortalidad + ' muertos' : '') + '</div>' +
+          '<div class="ri-detalle">' + r.comportamiento + (r.sintomas !== 'Ninguno' ? ' · ' + r.sintomas : '') + '</div>' +
+        '</div>' +
+        '<div class="ri-fecha">' + TAPP.formatoFechaCorta(r.fecha) + '</div>' +
+        '<button class="ri-borrar" data-del="' + r.id + '">✕</button>' +
+      '</div>';
+    }).join('');
+
+    lista.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        TAPP.confirmar('¿Eliminar este registro?', function(){
+          registros = registros.filter(function(r){ return r.id !== btn.dataset.del; });
+          TAPP.guardar('saludRegistros', registros);
+          TAPP.toast('Registro eliminado', 'bad');
+          renderSalud(cont);
+        });
+      });
+    });
+  }
+
+  function generarAlertaSiCorresponde(r){
+    var alertas = TAPP.leer('alertas', []);
+    var generadas = 0;
+
+    if (r.mortalidad > 0) {
+      alertas.push({
+        id: TAPP.idUnico(),
+        tipo: r.mortalidad >= 5 ? 'bad' : 'warn',
+        titulo: (r.mortalidad >= 5 ? '🚨 Mortalidad elevada' : '⚠️ Mortalidad registrada'),
+        detalle: r.mortalidad + ' pez(es) muerto(s) en ' + (r.estanque || 'estanque') + '. Revisar causa y calidad del agua.',
+        origen: 'salud', fecha: r.fecha, creado: Date.now(), resuelta: false
+      });
+      generadas++;
+    }
+    if (r.sintomas !== 'Ninguno') {
+      alertas.push({
+        id: TAPP.idUnico(),
+        tipo: 'warn',
+        titulo: '⚠️ Síntoma detectado: ' + r.sintomas,
+        detalle: 'Observado en ' + (r.estanque || 'estanque') + '. Comportamiento: ' + r.comportamiento + '.',
+        origen: 'salud', fecha: r.fecha, creado: Date.now(), resuelta: false
+      });
+      generadas++;
+    }
+    if (r.comportamiento !== 'Normal' && r.sintomas === 'Ninguno') {
+      alertas.push({
+        id: TAPP.idUnico(),
+        tipo: 'warn',
+        titulo: '⚠️ Comportamiento anormal: ' + r.comportamiento,
+        detalle: 'Observado en ' + (r.estanque || 'estanque') + '. Monitorear de cerca.',
+        origen: 'salud', fecha: r.fecha, creado: Date.now(), resuelta: false
+      });
+      generadas++;
+    }
+
+    if (generadas > 0) TAPP.guardar('alertas', alertas);
+    return generadas;
+  }
+
+  document.getElementById('sa-guardar').addEventListener('click', function(){
+    var nuevo = {
+      id: TAPP.idUnico(),
+      fecha: document.getElementById('sa-fecha').value || TAPP.fechaHoy(),
+      estanque: document.getElementById('sa-estanque').value.trim(),
+      mortalidad: parseInt(document.getElementById('sa-mortalidad').value) || 0,
+      comportamiento: document.getElementById('sa-comportamiento').value,
+      sintomas: document.getElementById('sa-sintomas').value,
+      obs: document.getElementById('sa-obs').value.trim(),
+      creado: Date.now()
+    };
+    registros.push(nuevo);
+    TAPP.guardar('saludRegistros', registros);
+
+    var nAlertas = generarAlertaSiCorresponde(nuevo);
+    if (nAlertas > 0) {
+      TAPP.toast('⚠️ Inspección guardada con ' + nAlertas + ' alerta(s) generada(s)', 'bad');
+    } else {
+      TAPP.toast('✅ Inspección guardada — sin novedades');
+    }
+    renderSalud(cont);
+  });
+
+  renderLista();
+
+  if (document.getElementById('sa-compartir')) {
+    document.getElementById('sa-compartir').addEventListener('click', function(){
+      var u = registros.slice().sort(function(a,b){ return b.creado-a.creado; })[0];
+      var texto = [
+        '🩺 *Reporte de Salud — MYYAX*', '',
+        '📍 ' + (u.estanque || 'Estanque sin nombre'),
+        '📅 ' + TAPP.formatoFechaCorta(u.fecha), '',
+        '💀 Mortalidad: ' + u.mortalidad + ' pez(es)',
+        '🐟 Comportamiento: ' + u.comportamiento,
+        '🔍 Síntomas: ' + u.sintomas
+      ];
+      if (u.obs) { texto.push(''); texto.push('Observaciones: ' + u.obs); }
+      texto.push('');
+      texto.push('Mortalidad acumulada total: ' + mortalidadTotal() + ' peces');
+
+      TAPP.compartirMenu(
+        { titulo:'Reporte de Salud', texto: texto.join('\n') },
+        { titulo:'Salud de las Truchas', subtitulo:(u.estanque||'')+' · '+TAPP.formatoFechaCorta(u.fecha), icono:'🩺',
+          color:'#8E6BD6', colorOscuro:'#5D3F9E',
+          filas: [
+            { label:'Mortalidad', valor: u.mortalidad + ' peces' },
+            { label:'Comportamiento', valor: u.comportamiento },
+            { label:'Síntomas', valor: u.sintomas },
+            { label:'Mortalidad acumulada', valor: mortalidadTotal() }
+          ],
+          archivoNombre:'salud_truchas' }
+      );
+    });
+  }
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: REPORTES
+// ════════════════════════════════════════════════════════════════════════
+function renderReportes(cont){
+  var tabActual = 'resumen';
+
+  var html = '';
+  html += '<div class="tabs-row" id="rp-tabs">' +
+    '<button class="tab-btn activo" data-t="resumen">Resumen</button>' +
+    '<button class="tab-btn" data-t="agua">Agua</button>' +
+    '<button class="tab-btn" data-t="aliment">Alimento</button>' +
+    '<button class="tab-btn" data-t="crecim">Crecim.</button>' +
+  '</div>';
+  html += '<div id="rp-contenido"></div>';
+
+  cont.innerHTML = html;
+
+  function renderResumen(){
+    var alimentaciones = TAPP.leer('alimentaciones', []);
+    var agua = TAPP.leer('registrosAgua', []);
+    var crecimientos = TAPP.leer('crecimientos', []);
+    var salud = TAPP.leer('saludRegistros', []);
+    var alertas = TAPP.leer('alertas', []);
+
+    var totalAlimento = alimentaciones.reduce(function(a,r){ return a+parseFloat(r.cantidad||0); }, 0);
+    var totalMortalidad = salud.reduce(function(a,r){ return a+(r.mortalidad||0); }, 0);
+    var alertasActivas = alertas.filter(function(a){ return !a.resuelta; }).length;
+
+    var ultPeso = crecimientos.length ? crecimientos.slice().sort(function(a,b){return b.creado-a.creado;})[0].pesoPromedio : null;
+
+    var html2 = '<div class="card">' +
+      '<div class="seccion-titulo" style="margin-top:0">Resumen general</div>' +
+      filaResumen('🍽️', 'Total de alimento suministrado', totalAlimento.toFixed(1) + ' kg') +
+      filaResumen('💧', 'Mediciones de agua registradas', agua.length) +
+      filaResumen('📈', 'Peso promedio más reciente', ultPeso ? ultPeso + ' g' : 'Sin datos') +
+      filaResumen('🩺', 'Mortalidad acumulada', totalMortalidad + ' peces') +
+      filaResumen('🔔', 'Alertas activas', alertasActivas) +
+    '</div>';
+
+    html2 += '<div class="info-box">📊 Este resumen se actualiza automáticamente con cada registro que guardes en las demás secciones de la app.</div>';
+
+    document.getElementById('rp-contenido').innerHTML = html2;
+  }
+
+  function filaResumen(ic, lbl, val){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--borde);">' +
+      '<span style="font-size:18px;">' + ic + '</span>' +
+      '<span style="flex:1;font-size:12.5px;font-weight:600;color:var(--gris-txt);">' + lbl + '</span>' +
+      '<span style="font-size:14px;font-weight:800;color:var(--azul-prof);">' + val + '</span>' +
+    '</div>';
+  }
+
+  function renderTablaAgua(){
+    var agua = TAPP.leer('registrosAgua', []).slice().sort(function(a,b){ return b.creado-a.creado; });
+    if (agua.length === 0) { document.getElementById('rp-contenido').innerHTML = vacio('💧','Sin registros de agua'); return; }
+    var filas = agua.map(function(r){
+      return '<tr><td>' + TAPP.formatoFechaCorta(r.fecha) + '</td><td>' + (r.estanque||'—') + '</td><td>' + r.temperatura + '°C</td><td>' + r.ph + '</td><td>' + r.oxigeno + ' mg/L</td></tr>';
+    }).join('');
+    document.getElementById('rp-contenido').innerHTML =
+      '<div class="tabla-wrap"><table class="tabla-simple"><thead><tr><th>Fecha</th><th>Estanque</th><th>Temp.</th><th>pH</th><th>O₂</th></tr></thead><tbody>' + filas + '</tbody></table></div>';
+  }
+
+  function renderTablaAlimento(){
+    var al = TAPP.leer('alimentaciones', []).slice().sort(function(a,b){ return b.creado-a.creado; });
+    if (al.length === 0) { document.getElementById('rp-contenido').innerHTML = vacio('🍽️','Sin registros de alimentación'); return; }
+    var filas = al.map(function(r){
+      return '<tr><td>' + TAPP.formatoFechaCorta(r.fecha) + '</td><td>' + r.momento + '</td><td>' + r.cantidad + ' kg</td><td>' + r.tipo + '</td></tr>';
+    }).join('');
+    document.getElementById('rp-contenido').innerHTML =
+      '<div class="tabla-wrap"><table class="tabla-simple"><thead><tr><th>Fecha</th><th>Momento</th><th>Cantidad</th><th>Tipo</th></tr></thead><tbody>' + filas + '</tbody></table></div>';
+  }
+
+  function renderTablaCrecim(){
+    var cr = TAPP.leer('crecimientos', []).slice().sort(function(a,b){ return b.creado-a.creado; });
+    if (cr.length === 0) { document.getElementById('rp-contenido').innerHTML = vacio('📈','Sin muestreos de crecimiento'); return; }
+    var filas = cr.map(function(r){
+      return '<tr><td>' + TAPP.formatoFechaCorta(r.fecha) + '</td><td>' + (r.estanque||'—') + '</td><td>' + r.pesoPromedio + ' g</td><td>' + r.npeces + '</td></tr>';
+    }).join('');
+    document.getElementById('rp-contenido').innerHTML =
+      '<div class="tabla-wrap"><table class="tabla-simple"><thead><tr><th>Fecha</th><th>Estanque</th><th>Peso prom.</th><th>N° peces</th></tr></thead><tbody>' + filas + '</tbody></table></div>';
+  }
+
+  function vacio(ic, msg){
+    return '<div class="vacio-msg"><div class="vm-icono">' + ic + '</div><p>' + msg + '</p></div>';
+  }
+
+  document.getElementById('rp-tabs').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-t]');
+    if (!btn) return;
+    tabActual = btn.dataset.t;
+    cont.querySelectorAll('#rp-tabs .tab-btn').forEach(function(b){ b.classList.toggle('activo', b===btn); });
+    if (tabActual === 'resumen') renderResumen();
+    if (tabActual === 'agua') renderTablaAgua();
+    if (tabActual === 'aliment') renderTablaAlimento();
+    if (tabActual === 'crecim') renderTablaCrecim();
+  });
+
+  renderResumen();
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: ASISTENCIA A PRÁCTICAS
+// ════════════════════════════════════════════════════════════════════════
+function renderAsistencia(cont){
+  var TAREAS_BASE = [
+    { id:'t1', txt:'Alimentación de la mañana', desc:'Verificar apetito y cantidad consumida' },
+    { id:'t2', txt:'Medición de calidad de agua', desc:'Temperatura, pH y oxígeno' },
+    { id:'t3', txt:'Inspección visual de las truchas', desc:'Comportamiento y mortalidad' },
+    { id:'t4', txt:'Limpieza de estanques / mallas', desc:'Retirar restos y sedimentos' },
+    { id:'t5', txt:'Alimentación de la tarde', desc:'Segunda ración del día' },
+    { id:'t6', txt:'Registro en bitácora', desc:'Anotar observaciones del día' }
+  ];
+
+  var hoy = TAPP.fechaHoy();
+  var registrosAsist = TAPP.leer('asistencia', {}); // { 'YYYY-MM-DD': {t1:true, t2:false, ...} }
+  var checkHoy = registrosAsist[hoy] || {};
+
+  var html = '';
+
+  html += '<div class="info-box">📋 Marca las tareas que completaste hoy <strong>' + TAPP.formatoFechaCorta(hoy) + '</strong>. El progreso se guarda automáticamente por día.</div>';
+
+  function progreso(){
+    var hechas = TAREAS_BASE.filter(function(t){ return checkHoy[t.id]; }).length;
+    return Math.round((hechas / TAREAS_BASE.length) * 100);
+  }
+
+  html += '<div class="card" style="text-align:center;">' +
+    '<div style="font-size:13px;font-weight:700;color:var(--azul-prof);margin-bottom:8px;">Progreso de hoy</div>' +
+    '<div style="font-size:30px;font-weight:800;color:var(--azul-medio);" id="as-progreso">' + progreso() + '%</div>' +
+    '<div class="medidor-barra" style="background:#E0EAF0;margin-top:10px;"><div id="as-barra" style="height:100%;background:linear-gradient(90deg,var(--azul-claro),var(--azul-medio));border-radius:6px;width:'+progreso()+'%;transition:width 0.3s;"></div></div>' +
+  '</div>';
+
+  html += '<button class="btn-compartir" id="as-compartir"><span class="ico">📤</span> Compartir progreso de hoy</button>';
+
+  html += '<div class="seccion-titulo">Tareas de hoy</div>';
+  html += '<div id="as-lista">';
+  TAREAS_BASE.forEach(function(t){
+    html += '<div class="check-item">' +
+      '<input type="checkbox" id="chk-' + t.id + '" ' + (checkHoy[t.id] ? 'checked' : '') + '>' +
+      '<div class="ci-txt"><label for="chk-' + t.id + '">' + t.txt + '<small>' + t.desc + '</small></label></div>' +
+    '</div>';
+  });
+  html += '</div>';
+
+  html += '<div class="seccion-titulo">Historial de asistencia</div>';
+  html += '<div id="as-historial"></div>';
+
+  cont.innerHTML = html;
+
+  function actualizarProgreso(){
+    var pct = progreso();
+    document.getElementById('as-progreso').textContent = pct + '%';
+    document.getElementById('as-barra').style.width = pct + '%';
+  }
+
+  TAREAS_BASE.forEach(function(t){
+    document.getElementById('chk-' + t.id).addEventListener('change', function(e){
+      checkHoy[t.id] = e.target.checked;
+      registrosAsist[hoy] = checkHoy;
+      TAPP.guardar('asistencia', registrosAsist);
+      actualizarProgreso();
+      renderHistorial();
+    });
+  });
+
+  function renderHistorial(){
+    var dias = Object.keys(registrosAsist).sort().reverse().slice(0, 10);
+    var hist = document.getElementById('as-historial');
+    if (dias.length === 0) {
+      hist.innerHTML = '<div class="vacio-msg"><div class="vm-icono">📋</div><p>Aún no hay historial</p></div>';
+      return;
+    }
+    hist.innerHTML = dias.map(function(d){
+      var chk = registrosAsist[d];
+      var hechas = TAREAS_BASE.filter(function(t){ return chk[t.id]; }).length;
+      var pct = Math.round((hechas/TAREAS_BASE.length)*100);
+      var color = pct === 100 ? 'var(--verde-ok)' : (pct >= 50 ? 'var(--amber)' : 'var(--rojo)');
+      var bg = pct === 100 ? '#E3F6EA' : (pct >= 50 ? '#FDF1DF' : '#FBE6E6');
+      return '<div class="registro-item">' +
+        '<div class="ri-icono" style="background:'+bg+';color:'+color+';">📋</div>' +
+        '<div class="ri-info"><div class="ri-titulo">' + hechas + ' / ' + TAREAS_BASE.length + ' tareas</div><div class="ri-detalle">' + pct + '% completado</div></div>' +
+        '<div class="ri-fecha">' + TAPP.formatoFechaCorta(d) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  renderHistorial();
+
+  document.getElementById('as-compartir').addEventListener('click', function(){
+    var hechas = TAREAS_BASE.filter(function(t){ return checkHoy[t.id]; });
+    var pendientes = TAREAS_BASE.filter(function(t){ return !checkHoy[t.id]; });
+
+    var texto = [
+      '📋 *Asistencia a Prácticas — MYYAX*', '',
+      '📅 ' + TAPP.formatoFechaCorta(hoy),
+      '✅ Progreso: ' + progreso() + '% (' + hechas.length + '/' + TAREAS_BASE.length + ' tareas)', ''
+    ];
+    if (hechas.length > 0) {
+      texto.push('Completadas:');
+      hechas.forEach(function(t){ texto.push('✓ ' + t.txt); });
+      texto.push('');
+    }
+    if (pendientes.length > 0) {
+      texto.push('Pendientes:');
+      pendientes.forEach(function(t){ texto.push('○ ' + t.txt); });
+    }
+
+    TAPP.compartirMenu(
+      { titulo:'Asistencia a Prácticas', texto: texto.join('\n') },
+      { titulo:'Asistencia a Prácticas', subtitulo: TAPP.formatoFechaCorta(hoy), icono:'📋',
+        color:'#5B8DEF', colorOscuro:'#3858B8',
+        filas: [
+          { label:'Progreso del día', valor: progreso() + '%' },
+          { label:'Tareas completadas', valor: hechas.length + ' / ' + TAREAS_BASE.length },
+          { label:'Pendientes', valor: pendientes.length }
+        ],
+        archivoNombre:'asistencia' }
+    );
+  });
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: CONTACTO
+// ════════════════════════════════════════════════════════════════════════
+function renderContacto(cont){
+  var contactos = TAPP.leer('contactos', [
+    { id:'c1', nombre:'Soporte técnico', detalle:'Asistencia general de la app', tel:'', tipo:'app', editable:false },
+    { id:'c2', nombre:'Médico veterinario / Sanidad acuícola', detalle:'Consultas sobre salud de las truchas', tel:'', tipo:'personalizado', editable:true },
+    { id:'c3', nombre:'Proveedor de alimento balanceado', detalle:'Pedidos y consultas', tel:'', tipo:'personalizado', editable:true },
+    { id:'c4', nombre:'Técnico / Asesor acuícola', detalle:'Asesoría en manejo de la piscigranja', tel:'', tipo:'personalizado', editable:true }
+  ]);
+
+  var html = '';
+
+  html += '<div class="info-box">📞 Guarda aquí los teléfonos de las personas o entidades que apoyan tu piscigranja. Toca "Editar" para agregar el número.</div>';
+
+  html += '<div class="seccion-titulo">Directorio</div>';
+  html += '<div id="co-lista"></div>';
+
+  cont.innerHTML = html;
+
+  function iconoTipo(tipo){
+    if (tipo === 'app') return '🛟';
+    return '👤';
+  }
+
+  function renderLista(){
+    var lista = document.getElementById('co-lista');
+    lista.innerHTML = contactos.map(function(c){
+      return '<div class="contacto-item">' +
+        '<div class="co-ico">' + iconoTipo(c.tipo) + '</div>' +
+        '<div class="co-info">' +
+          '<div class="co-nombre">' + c.nombre + '</div>' +
+          '<div class="co-detalle">' + (c.tel ? '📱 ' + c.tel : c.detalle) + '</div>' +
+        '</div>' +
+        (c.tel
+          ? '<a class="co-btn" href="tel:' + c.tel + '">Llamar</a>'
+          : (c.editable ? '<button class="co-btn" data-edit="' + c.id + '" style="border:none;cursor:pointer;">Editar</button>' : '')
+        ) +
+      '</div>';
+    }).join('');
+
+    lista.querySelectorAll('[data-edit]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        abrirEdicion(btn.dataset.edit);
+      });
+    });
+  }
+
+  function abrirEdicion(id){
+    var c = contactos.find(function(x){ return x.id === id; });
+    var nuevoTel = window.prompt('Número de teléfono para "' + c.nombre + '":', c.tel || '');
+    if (nuevoTel === null) return;
+    c.tel = nuevoTel.trim();
+    TAPP.guardar('contactos', contactos);
+    TAPP.toast('✅ Contacto actualizado');
+    renderLista();
+  }
+
+  renderLista();
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: CLIMA
+// ════════════════════════════════════════════════════════════════════════
+function renderClima(cont){
+
+  // Ubicación por defecto: Aprisca Huamachuco (usa coordenadas de Huamachuco,
+  // ya que "Aprisca" es un caserío sin registro propio en bases de geocodificación)
+  var CIUDAD_DEFAULT = { nombre:'Aprisca Huamachuco', pais:'La Libertad, Perú', lat:-7.8121, lon:-78.0487 };
+
+  var html = '';
+  html += '<div class="buscador" style="position:relative;">' +
+    '<input type="text" id="cl-input" placeholder="Buscar otra ubicación..." autocomplete="off" ' +
+      'style="flex:1;border:1.5px solid var(--borde);border-radius:14px;padding:11px 14px;font-size:14px;outline:none;">' +
+    '<button id="cl-buscar" style="border:none;background:var(--azul-medio);color:#fff;width:44px;border-radius:14px;font-size:17px;">🔍</button>' +
+    '<div class="sugerencias" id="cl-sugerencias" style="position:absolute;top:50px;left:0;right:44px;background:#fff;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.18);overflow:hidden;z-index:50;display:none;"></div>' +
+  '</div>';
+
+  html += '<div id="cl-resultado"><div class="estado-msg" style="text-align:center;padding:40px;color:var(--gris-claro);">Cargando clima...</div></div>';
+
+  cont.innerHTML = html;
+
+  var resultado = document.getElementById('cl-resultado');
+  var inputCiudad = document.getElementById('cl-input');
+  var btnBuscar = document.getElementById('cl-buscar');
+  var sugerencias = document.getElementById('cl-sugerencias');
+
+  function infoClimaCodigo(code, esNoche){
+    var map = {
+      0:{ico:'☀️',desc:'Despejado',tipo:'soleado'}, 1:{ico:'🌤️',desc:'Mayormente despejado',tipo:'soleado'},
+      2:{ico:'⛅',desc:'Parcialmente nublado',tipo:'nublado'}, 3:{ico:'☁️',desc:'Nublado',tipo:'nublado'},
+      45:{ico:'🌫️',desc:'Neblina',tipo:'niebla'}, 48:{ico:'🌫️',desc:'Niebla escarchada',tipo:'niebla'},
+      51:{ico:'🌦️',desc:'Llovizna ligera',tipo:'lluvia'}, 53:{ico:'🌦️',desc:'Llovizna',tipo:'lluvia'},
+      55:{ico:'🌧️',desc:'Llovizna intensa',tipo:'lluvia'}, 61:{ico:'🌧️',desc:'Lluvia ligera',tipo:'lluvia'},
+      63:{ico:'🌧️',desc:'Lluvia moderada',tipo:'lluvia'}, 65:{ico:'🌧️',desc:'Lluvia intensa',tipo:'lluvia'},
+      71:{ico:'🌨️',desc:'Nevada ligera',tipo:'nieve'}, 73:{ico:'🌨️',desc:'Nevada moderada',tipo:'nieve'},
+      75:{ico:'❄️',desc:'Nevada intensa',tipo:'nieve'}, 80:{ico:'🌦️',desc:'Lluvia ligera',tipo:'lluvia'},
+      81:{ico:'🌧️',desc:'Lluvia moderada',tipo:'lluvia'}, 82:{ico:'⛈️',desc:'Lluvia violenta',tipo:'tormenta'},
+      95:{ico:'⛈️',desc:'Tormenta eléctrica',tipo:'tormenta'}, 96:{ico:'⛈️',desc:'Tormenta con granizo',tipo:'tormenta'},
+      99:{ico:'⛈️',desc:'Tormenta fuerte',tipo:'tormenta'}
+    };
+    var info = map[code] || { ico:'🌡️', desc:'Variable', tipo:'nublado' };
+    if (esNoche && info.tipo === 'soleado') info = { ico: code===0?'🌙':'🌥️', desc: code===0?'Despejado':'Parc. nublado', tipo:'noche' };
+    return info;
+  }
+
+  function fondoTipo(tipo){
+    var map = {
+      soleado:'linear-gradient(160deg,#6FCBF5,#3FA9E8)', nublado:'linear-gradient(160deg,#4A8FE0,#3868C9)',
+      lluvia:'linear-gradient(160deg,#5C5FC9,#3D3FA8)', tormenta:'linear-gradient(160deg,#4A6FE0,#2C4CC4)',
+      nieve:'linear-gradient(160deg,#A8C8EE,#7FA8DB)', noche:'linear-gradient(160deg,#2A2E7A,#161A52)',
+      niebla:'linear-gradient(160deg,#7A8AA8,#586886)'
+    };
+    return map[tipo] || map.soleado;
+  }
+
+  function cargarClima(ciudad){
+    resultado.innerHTML = '<div class="estado-msg" style="text-align:center;padding:40px;color:var(--gris-claro);">Cargando clima de ' + ciudad.nombre + '...</div>';
+
+    var url = 'https://api.open-meteo.com/v1/forecast' +
+      '?latitude=' + ciudad.lat + '&longitude=' + ciudad.lon +
+      '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day' +
+      '&daily=weather_code,temperature_2m_max,temperature_2m_min' +
+      '&timezone=auto&forecast_days=5';
+
+    fetch(url)
+      .then(function(r){ if(!r.ok) throw new Error(); return r.json(); })
+      .then(function(data){ render(data, ciudad); })
+      .catch(function(){
+        resultado.innerHTML = '<div class="estado-msg" style="text-align:center;padding:40px;color:var(--rojo);">⚠️ No se pudo cargar el clima de ' + ciudad.nombre + '.</div>';
+      });
+  }
+
+  function render(data, ciudad){
+    var cur = data.current;
+    var esNoche = cur.is_day === 0;
+    var info = infoClimaCodigo(cur.weather_code, esNoche);
+    var temp = Math.round(cur.temperature_2m);
+    var sens = Math.round(cur.apparent_temperature);
+    var hum = cur.relative_humidity_2m;
+    var viento = Math.round(cur.wind_speed_10m);
+
+    var diasSemana = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    var diasHTML = '';
+    for (var d=0; d<Math.min(5,data.daily.time.length); d++){
+      var fecha = new Date(data.daily.time[d] + 'T00:00:00');
+      var nombreDia = d===0 ? 'Hoy' : diasSemana[fecha.getDay()];
+      var dInfo = infoClimaCodigo(data.daily.weather_code[d], false);
+      var max = Math.round(data.daily.temperature_2m_max[d]);
+      var min = Math.round(data.daily.temperature_2m_min[d]);
+      diasHTML += '<div style="display:flex;align-items:center;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,0.15);font-size:13px;color:#fff;">' +
+        '<div style="flex:1;font-weight:700;">' + nombreDia + '</div>' +
+        '<div style="flex:0.5;font-size:20px;text-align:center;">' + dInfo.ico + '</div>' +
+        '<div style="flex:1;text-align:right;font-weight:700;">' + max + '°<span style="opacity:0.65;margin-left:6px;">' + min + '°</span></div>' +
+      '</div>';
+    }
+
+    var relevanciaPiscicola = '';
+    if (temp <= 5) relevanciaPiscicola = '🥶 Temperatura ambiente muy baja, vigila que el agua no baje de 13°C.';
+    else if (temp >= 28) relevanciaPiscicola = '🥵 Calor intenso: revisa oxigenación del agua con más frecuencia.';
+    else relevanciaPiscicola = '✅ Condiciones ambientales normales para la operación de la piscigranja.';
+
+    resultado.innerHTML =
+      '<div style="border-radius:22px;padding:22px 18px;color:#fff;background:' + fondoTipo(info.tipo) + ';box-shadow:0 10px 24px rgba(0,0,0,0.18);">' +
+        '<div style="text-align:center;font-size:14px;font-weight:700;">📍 ' + ciudad.nombre + '</div>' +
+        '<div style="text-align:center;font-size:11px;opacity:0.8;margin-bottom:10px;">' + (ciudad.pais||'') + '</div>' +
+        '<div style="text-align:center;font-size:64px;line-height:1;">' + info.ico + '</div>' +
+        '<div style="text-align:center;font-size:50px;font-weight:800;margin-top:6px;">' + temp + '°</div>' +
+        '<div style="text-align:center;font-size:15px;font-weight:600;opacity:0.95;">' + info.desc + '</div>' +
+        '<div style="text-align:center;font-size:11.5px;opacity:0.75;margin-top:2px;">Sensación ' + sens + '°</div>' +
+
+        '<div style="display:flex;gap:8px;margin-top:18px;">' +
+          '<div style="flex:1;background:rgba(255,255,255,0.16);border-radius:14px;padding:10px;text-align:center;"><div style="font-size:18px;">💧</div><div style="font-size:13px;font-weight:700;margin-top:2px;">' + hum + '%</div><div style="font-size:9px;opacity:0.75;">Humedad</div></div>' +
+          '<div style="flex:1;background:rgba(255,255,255,0.16);border-radius:14px;padding:10px;text-align:center;"><div style="font-size:18px;">💨</div><div style="font-size:13px;font-weight:700;margin-top:2px;">' + viento + ' km/h</div><div style="font-size:9px;opacity:0.75;">Viento</div></div>' +
+        '</div>' +
+
+        '<div style="font-size:11px;font-weight:700;opacity:0.8;margin:18px 0 8px 2px;">PRÓXIMOS 5 DÍAS</div>' +
+        diasHTML +
+      '</div>' +
+
+      '<div class="info-box" style="margin-top:14px;">' + relevanciaPiscicola + '</div>';
+  }
+
+  var debounce;
+  inputCiudad.addEventListener('input', function(){
+    clearTimeout(debounce);
+    var val = this.value;
+    debounce = setTimeout(function(){ buscarSugerencias(val); }, 380);
+  });
+  inputCiudad.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') { e.preventDefault(); buscarPrimero(this.value); }
+  });
+  btnBuscar.addEventListener('click', function(){ buscarPrimero(inputCiudad.value); });
+  document.addEventListener('click', function(e){
+    if (!e.target.closest('.buscador')) sugerencias.style.display = 'none';
+  });
+
+  function buscarSugerencias(q){
+    if (!q || q.trim().length < 2) { sugerencias.style.display='none'; return; }
+    fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(q.trim()) + '&count=5&language=es&format=json')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        sugerencias.innerHTML = '';
+        if (!data.results || !data.results.length) { sugerencias.style.display='none'; return; }
+        data.results.forEach(function(l){
+          var div = document.createElement('div');
+          div.style.padding = '11px 14px';
+          div.style.fontSize = '13.5px';
+          div.style.borderBottom = '1px solid #f0f0f0';
+          div.style.cursor = 'pointer';
+          div.innerHTML = '<strong>' + l.name + '</strong><div style="color:#999;font-size:11.5px;">' + (l.admin1||'') + (l.country ? ', '+l.country : '') + '</div>';
+          div.onclick = function(){
+            sugerencias.style.display = 'none';
+            inputCiudad.value = l.name;
+            cargarClima({ nombre:l.name, pais:(l.admin1?l.admin1+', ':'')+(l.country||''), lat:l.latitude, lon:l.longitude });
+          };
+          sugerencias.appendChild(div);
+        });
+        sugerencias.style.display = 'block';
+      }).catch(function(){ sugerencias.style.display='none'; });
+  }
+
+  function buscarPrimero(q){
+    if (!q || q.trim().length < 2) return;
+    sugerencias.style.display = 'none';
+    fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(q.trim()) + '&count=1&language=es&format=json')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (data.results && data.results.length) {
+          var l = data.results[0];
+          cargarClima({ nombre:l.name, pais:(l.admin1?l.admin1+', ':'')+(l.country||''), lat:l.latitude, lon:l.longitude });
+        } else {
+          TAPP.toast('No se encontró "' + q + '"', 'bad');
+        }
+      }).catch(function(){ TAPP.toast('Error de conexión', 'bad'); });
+  }
+
+  cargarClima(CIUDAD_DEFAULT);
+}
+// ════════════════════════════════════════════════════════════════════════
+//  INICIALIZACIÓN
+// ════════════════════════════════════════════════════════════════════════
+irAVista('inicio');
+
+</script>
+</body>
+</html>
