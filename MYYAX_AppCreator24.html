@@ -1,0 +1,2456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>MYYAX</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  :root {
+    --azul-prof: #0B4F6C;
+    --azul-medio: #1B7FA6;
+    --azul-claro: #5DC1E0;
+    --celeste-bg: #EAF6FB;
+    --verde-ok: #2E9C5C;
+    --verde-bg: #E3F6EA;
+    --amber: #E8A23D;
+    --amber-bg: #FDF1DF;
+    --rojo: #D14B4B;
+    --rojo-bg: #FBE6E6;
+    --gris-txt: #4A5660;
+    --gris-claro: #8FA0AB;
+    --blanco: #FFFFFF;
+    --borde: #DCE7EC;
+    --sombra: 0 4px 14px rgba(11,79,108,0.08);
+  }
+
+  html, body {
+    font-family: 'Segoe UI', system-ui, Arial, sans-serif;
+    background: var(--celeste-bg);
+    color: var(--gris-txt);
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .app-shell {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--celeste-bg);
+    position: relative;
+    padding-bottom: 78px;
+  }
+
+  /* ============ TOPBAR ============ */
+  .topbar {
+    background: linear-gradient(135deg, var(--azul-prof) 0%, var(--azul-medio) 100%);
+    color: #fff;
+    padding: 16px 18px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    box-shadow: 0 4px 16px rgba(11,79,108,0.25);
+  }
+  .topbar .icono-pez { font-size: 26px; }
+  .topbar .titulos { flex: 1; }
+  .topbar h1 { font-size: 17px; font-weight: 800; letter-spacing: 0.2px; }
+  .topbar .subt { font-size: 11px; opacity: 0.85; font-weight: 500; }
+  .btn-back {
+    background: rgba(255,255,255,0.18);
+    border: none;
+    color: #fff;
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    font-size: 17px;
+    display: flex; align-items:center; justify-content:center;
+    cursor: pointer;
+  }
+  .btn-back:active { background: rgba(255,255,255,0.3); }
+  .hidden { display: none !important; }
+
+  /* ============ VISTAS ============ */
+  .vista { padding: 16px 16px 8px; animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  /* ============ MENU PRINCIPAL ============ */
+  .saludo-card {
+    background: linear-gradient(135deg, var(--azul-medio), var(--azul-claro));
+    border-radius: 20px;
+    padding: 18px 20px;
+    color: #fff;
+    margin-bottom: 18px;
+    box-shadow: var(--sombra);
+    position: relative;
+    overflow: hidden;
+  }
+  .saludo-card .deco { position:absolute; right:-10px; top:-10px; font-size:90px; opacity:0.15; }
+  .saludo-card h2 { font-size: 18px; font-weight: 800; margin-bottom: 4px; position:relative; z-index:2;}
+  .saludo-card p { font-size: 12.5px; opacity: 0.9; position:relative; z-index:2; }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .menu-item {
+    background: var(--blanco);
+    border-radius: 18px;
+    padding: 16px 12px;
+    text-align: center;
+    box-shadow: var(--sombra);
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+    position: relative;
+  }
+  .menu-item:active { transform: scale(0.96); }
+  .menu-item .mi-icono {
+    width: 52px; height: 52px;
+    border-radius: 16px;
+    display:flex; align-items:center; justify-content:center;
+    font-size: 26px;
+    margin: 0 auto 8px;
+  }
+  .menu-item .mi-label { font-size: 12.5px; font-weight: 700; color: var(--azul-prof); }
+  .menu-item .mi-badge {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: var(--rojo);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    border-radius: 8px;
+    padding: 1px 6px;
+    display: none;
+  }
+  .menu-item .mi-badge.activo { display: inline-block; }
+
+  /* colores por sección */
+  .ic-inicio    { background: #DCEEF7; color: var(--azul-medio); }
+  .ic-aliment   { background: #FCE9D6; color: #C8762B; }
+  .ic-agua      { background: #D6F0F7; color: #1B95B5; }
+  .ic-crecim    { background: #DFF3E2; color: #2E9C5C; }
+  .ic-alertas   { background: #FBE3E3; color: var(--rojo); }
+  .ic-salud     { background: #EAE3F7; color: #7D5BBE; }
+  .ic-reportes  { background: #E3E9F7; color: #4A5FC1; }
+  .ic-asistenc  { background: #FBF0D6; color: #C99A1F; }
+  .ic-contacto  { background: #E3F3EC; color: #2E9C7A; }
+  .ic-clima     { background: #DCEEFB; color: #2D8FDB; }
+
+  /* ============ COMPONENTES COMUNES ============ */
+  .seccion-titulo {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--azul-prof);
+    letter-spacing: 0.3px;
+    margin: 18px 2px 10px;
+    text-transform: uppercase;
+  }
+  .seccion-titulo:first-child { margin-top: 0; }
+
+  .card {
+    background: var(--blanco);
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: var(--sombra);
+    margin-bottom: 14px;
+  }
+
+  .form-group { margin-bottom: 14px; }
+  .form-group label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--azul-prof);
+    margin-bottom: 6px;
+  }
+  .form-group .hint { font-size: 10.5px; color: var(--gris-claro); margin-top: 4px; font-weight: 500;}
+
+  input[type="number"], input[type="text"], input[type="date"], select, textarea {
+    width: 100%;
+    border: 1.5px solid var(--borde);
+    border-radius: 12px;
+    padding: 11px 13px;
+    font-size: 14.5px;
+    font-family: inherit;
+    color: var(--gris-txt);
+    background: #FBFDFE;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--azul-claro); }
+  textarea { resize: vertical; min-height: 70px; }
+
+  .input-unidad-wrap { position: relative; }
+  .input-unidad-wrap input { padding-right: 50px; }
+  .input-unidad {
+    position: absolute;
+    right: 13px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gris-claro);
+  }
+
+  .row-2 { display: flex; gap: 10px; }
+  .row-2 > div { flex: 1; }
+
+  .btn-primario {
+    width: 100%;
+    background: linear-gradient(135deg, var(--azul-medio), var(--azul-prof));
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 14.5px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 14px rgba(11,79,108,0.25);
+  }
+  .btn-primario:active { transform: scale(0.98); }
+  .btn-secundario {
+    width: 100%;
+    background: var(--blanco);
+    color: var(--azul-medio);
+    border: 1.5px solid var(--azul-claro);
+    border-radius: 14px;
+    padding: 12px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  .btn-secundario:active { background: var(--celeste-bg); }
+
+  .btn-peligro {
+    background: var(--rojo-bg);
+    color: var(--rojo);
+    border: 1.5px solid #F2C5C5;
+  }
+
+  /* ============ ESTADO BADGE ============ */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 800;
+  }
+  .badge-ok    { background: var(--verde-bg); color: var(--verde-ok); }
+  .badge-warn  { background: var(--amber-bg); color: var(--amber); }
+  .badge-bad   { background: var(--rojo-bg);  color: var(--rojo); }
+
+  /* ============ LISTA DE REGISTROS ============ */
+  .registro-item {
+    background: var(--blanco);
+    border-radius: 16px;
+    padding: 13px 15px;
+    margin-bottom: 10px;
+    box-shadow: var(--sombra);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .registro-item .ri-icono {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    display: flex; align-items:center; justify-content:center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .registro-item .ri-info { flex: 1; min-width:0; }
+  .registro-item .ri-titulo { font-size: 13.5px; font-weight: 700; color: var(--azul-prof); }
+  .registro-item .ri-detalle { font-size: 11.5px; color: var(--gris-claro); margin-top: 2px; }
+  .registro-item .ri-fecha { font-size: 10px; color: var(--gris-claro); white-space:nowrap; text-align:right; }
+  .registro-item .ri-borrar {
+    background: var(--rojo-bg);
+    color: var(--rojo);
+    border: none;
+    width: 28px; height:28px;
+    border-radius: 8px;
+    font-size: 13px;
+    flex-shrink:0;
+    cursor: pointer;
+  }
+
+  .vacio-msg {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--gris-claro);
+  }
+  .vacio-msg .vm-icono { font-size: 44px; margin-bottom: 10px; opacity:0.6; }
+  .vacio-msg p { font-size: 13px; font-weight: 600; }
+
+  /* ============ STATS ROW ============ */
+  .stats-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-mini {
+    flex: 1;
+    background: var(--blanco);
+    border-radius: 14px;
+    padding: 12px 8px;
+    text-align: center;
+    box-shadow: var(--sombra);
+  }
+  .stat-mini .sm-val { font-size: 19px; font-weight: 800; color: var(--azul-prof); }
+  .stat-mini .sm-lbl { font-size: 9.5px; color: var(--gris-claro); font-weight: 700; margin-top: 2px; text-transform:uppercase; }
+
+  /* ============ TABS ============ */
+  .tabs-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    background: var(--blanco);
+    border-radius: 14px;
+    padding: 4px;
+    box-shadow: var(--sombra);
+  }
+  .tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 9px 4px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gris-claro);
+    cursor: pointer;
+  }
+  .tab-btn.activo { background: var(--azul-medio); color: #fff; }
+
+  /* ============ BOTTOM NAV ============ */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--blanco);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 4px 10px;
+    box-shadow: 0 -4px 16px rgba(11,79,108,0.1);
+    z-index: 40;
+  }
+  .bn-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--gris-claro);
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 4px 6px;
+  }
+  .bn-item .bn-ico { font-size: 19px; }
+  .bn-item.activo { color: var(--azul-medio); }
+
+  /* ============ ALERTAS ============ */
+  .alerta-card {
+    border-radius: 16px;
+    padding: 13px 15px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .alerta-card.bad  { background: var(--rojo-bg);  border-left: 4px solid var(--rojo); }
+  .alerta-card.warn { background: var(--amber-bg); border-left: 4px solid var(--amber); }
+  .alerta-card.ok   { background: var(--verde-bg); border-left: 4px solid var(--verde-ok); }
+  .alerta-card .ac-ico { font-size: 22px; }
+  .alerta-card .ac-titulo { font-size: 13px; font-weight: 800; }
+  .alerta-card.bad .ac-titulo  { color: var(--rojo); }
+  .alerta-card.warn .ac-titulo { color: #B5791E; }
+  .alerta-card.ok .ac-titulo   { color: var(--verde-ok); }
+  .alerta-card .ac-detalle { font-size: 11.5px; color: var(--gris-txt); margin-top: 2px; }
+  .alerta-card .ac-fecha { font-size: 10px; color: var(--gris-claro); margin-top: 4px; }
+
+  /* ============ TOAST ============ */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--azul-prof);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    z-index: 100;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.activo { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.bad { background: var(--rojo); }
+
+  /* ============ INFO BOX ============ */
+  .info-box {
+    background: var(--celeste-bg);
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: var(--gris-txt);
+    margin-bottom: 14px;
+    line-height: 1.5;
+    border: 1px solid #D5E9F0;
+  }
+  .info-box strong { color: var(--azul-prof); }
+
+  /* ============ RANGO VISUAL (medidor) ============ */
+  .medidor {
+    margin-top: 8px;
+  }
+  .medidor-barra {
+    height: 8px;
+    border-radius: 6px;
+    background: linear-gradient(to right, var(--rojo) 0%, var(--amber) 25%, var(--verde-ok) 45%, var(--verde-ok) 65%, var(--amber) 80%, var(--rojo) 100%);
+    position: relative;
+  }
+  .medidor-punto {
+    position: absolute;
+    top: -3px;
+    width: 14px; height:14px;
+    background: #fff;
+    border: 3px solid var(--azul-prof);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  }
+  .medidor-labels { display:flex; justify-content:space-between; font-size:9px; color:var(--gris-claro); margin-top:4px; font-weight:600; }
+
+  /* ============ FAB (botón flotante agregar) ============ */
+  .fab {
+    position: fixed;
+    bottom: 86px;
+    right: 18px;
+    max-width: 480px;
+    width: 56px; height: 56px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--azul-medio), var(--azul-prof));
+    color: #fff;
+    border: none;
+    font-size: 26px;
+    box-shadow: 0 8px 20px rgba(11,79,108,0.35);
+    cursor: pointer;
+    z-index: 35;
+    display: flex; align-items:center; justify-content:center;
+  }
+  .fab:active { transform: scale(0.93); }
+
+  /* ============ TABLA simple reportes ============ */
+  .tabla-wrap { overflow-x: auto; border-radius: 14px; }
+  table.tabla-simple { width:100%; border-collapse: collapse; font-size: 12px; background:#fff; }
+  table.tabla-simple th {
+    background: var(--azul-prof); color:#fff; padding:9px 8px; text-align:left; font-weight:700; white-space:nowrap;
+  }
+  table.tabla-simple td { padding: 9px 8px; border-bottom: 1px solid var(--borde); white-space:nowrap; }
+  table.tabla-simple tr:last-child td { border-bottom:none; }
+
+  /* Checklist asistencia */
+  .check-item {
+    display:flex; align-items:center; gap:10px;
+    background:#fff; border-radius:14px; padding:12px 14px; margin-bottom:8px; box-shadow:var(--sombra);
+  }
+  .check-item input[type=checkbox] { width:20px; height:20px; accent-color: var(--azul-medio); }
+  .check-item .ci-txt { flex:1; font-size:13px; font-weight:600; }
+  .check-item .ci-txt small { display:block; font-size:10.5px; color:var(--gris-claro); font-weight:500; margin-top:2px; }
+
+  /* Contacto */
+  .contacto-item {
+    display:flex; align-items:center; gap:12px;
+    background:#fff; border-radius:16px; padding:14px; margin-bottom:10px; box-shadow:var(--sombra);
+  }
+  .contacto-item .co-ico {
+    width:46px; height:46px; border-radius:13px;
+    display:flex; align-items:center; justify-content:center; font-size:22px;
+    background:var(--celeste-bg);
+  }
+  .contacto-item .co-info { flex:1; }
+  .contacto-item .co-nombre { font-size:13.5px; font-weight:800; color:var(--azul-prof); }
+  .contacto-item .co-detalle { font-size:11.5px; color:var(--gris-claro); margin-top:1px; }
+  .contacto-item a.co-btn {
+    background: var(--azul-medio); color:#fff; border-radius:10px; padding:8px 14px; font-size:11.5px; font-weight:700;
+    text-decoration:none;
+  }
+
+  .credito-final {
+    text-align:center; font-size: 10px; color: var(--gris-claro); padding: 16px 10px 4px;
+  }
+
+  /* ============ BANNER / CABECERA MYYAX ============ */
+  .banner-myyax {
+    width: 100%;
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: var(--sombra);
+    line-height: 0;
+  }
+  .banner-myyax img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .btn-compartir {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    background: var(--blanco);
+    color: var(--azul-medio);
+    border: 1.5px solid var(--azul-claro);
+    border-radius: 14px;
+    padding: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 14px;
+  }
+  .btn-compartir:active { background: var(--celeste-bg); }
+  .btn-compartir .ico { font-size: 16px; }
+</style>
+</head>
+<body>
+
+<div class="app-shell" id="appShell">
+
+  <!-- ============ TOPBAR ============ -->
+  <div class="topbar">
+    <button class="btn-back hidden" id="btnBack">←</button>
+    <span class="icono-pez">🐟</span>
+    <div class="titulos">
+      <h1 id="topTitulo">MYYAX</h1>
+      <div class="subt" id="topSubt">Conecta · Monitorea · Crece</div>
+    </div>
+  </div>
+
+  <!-- ============ CONTENEDOR DE VISTAS ============ -->
+  <div id="vistasContainer"></div>
+
+  <!-- ============ BOTTOM NAV ============ -->
+  <div class="bottom-nav">
+    <button class="bn-item activo" data-vista="inicio"><span class="bn-ico">🏠</span>Inicio</button>
+    <button class="bn-item" data-vista="alimentacion"><span class="bn-ico">🍽️</span>Alimentar</button>
+    <button class="bn-item" data-vista="agua"><span class="bn-ico">💧</span>Agua</button>
+    <button class="bn-item" data-vista="alertas"><span class="bn-ico">🔔</span>Alertas</button>
+    <button class="bn-item" data-vista="reportes"><span class="bn-ico">📊</span>Reportes</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════════════
+//  TRUCHAAPP — Lógica principal
+// ════════════════════════════════════════════════════════════════════════
+
+// Número de versión visible — úsalo para confirmar si tu dispositivo cargó
+// la última actualización del código (se muestra en la pantalla de Inicio)
+var APP_VERSION = 'v1.3 · WhatsApp directo';
+
+// ---------- Almacenamiento con fallback seguro ----------
+var memoria = {}; // fallback si localStorage no está disponible en el WebView
+var storageDisponible = true;
+try {
+  localStorage.setItem('__test__','1');
+  localStorage.removeItem('__test__');
+} catch(e){ storageDisponible = false; }
+
+function guardar(key, valor){
+  var str = JSON.stringify(valor);
+  if (storageDisponible) {
+    try { localStorage.setItem(key, str); } catch(e){ memoria[key] = str; }
+  } else {
+    memoria[key] = str;
+  }
+}
+function leer(key, porDefecto){
+  var str = null;
+  if (storageDisponible) {
+    try { str = localStorage.getItem(key); } catch(e){ str = memoria[key] || null; }
+  } else {
+    str = memoria[key] || null;
+  }
+  if (!str) return porDefecto;
+  try { return JSON.parse(str); } catch(e){ return porDefecto; }
+}
+
+function idUnico(){ return 'id' + Date.now() + Math.floor(Math.random()*1000); }
+
+function fechaHoy(){
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function fechaHoraTexto(iso){
+  var d = iso ? new Date(iso) : new Date();
+  var dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  return dias[d.getDay()] + ' ' + String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + ' · ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+function formatoFechaCorta(fechaISO){
+  if(!fechaISO) return '';
+  var p = fechaISO.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+// ---------- Rangos óptimos para trucha (referencia técnica) ----------
+var RANGOS = {
+  temperatura: { min:13, max:18, unidad:'°C', criticoMin:8, criticoMax:22 },
+  ph:          { min:6.5, max:8.5, unidad:'', criticoMin:5.5, criticoMax:9.5 },
+  oxigeno:     { min:7.5, max:12, unidad:'mg/L', criticoMin:5, criticoMax:15 }
+};
+
+function evaluarParametro(tipo, valor){
+  var r = RANGOS[tipo];
+  if (valor === null || valor === undefined || isNaN(valor)) return 'na';
+  if (valor < r.criticoMin || valor > r.criticoMax) return 'bad';
+  if (valor < r.min || valor > r.max) return 'warn';
+  return 'ok';
+}
+
+// ---------- Toast ----------
+var toastEl = document.getElementById('toast');
+var toastTimer;
+function mostrarToast(msg, tipo){
+  clearTimeout(toastTimer);
+  toastEl.textContent = msg;
+  toastEl.className = 'toast activo' + (tipo === 'bad' ? ' bad' : '');
+  toastTimer = setTimeout(function(){ toastEl.className = 'toast'; }, 2200);
+}
+
+// ---------- Confirmación simple (reemplaza confirm() nativo poco confiable en WebViews) ----------
+function confirmarAccion(mensaje, callback){
+  // Usamos confirm nativo; si falla (algunos WebView lo bloquean), ejecutamos directo
+  var ok = true;
+  try { ok = window.confirm(mensaje); } catch(e){ ok = true; }
+  if (ok) callback();
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  COMPARTIR (texto nativo / imagen tipo tarjeta)
+// ════════════════════════════════════════════════════════════════════════
+
+// Comparte texto plano usando el menú nativo del sistema (WhatsApp, Facebook, etc.)
+// Si el navegador/WebView no soporta Web Share API, copia el texto al portapapeles.
+function compartirTexto(titulo, texto){
+  if (navigator.share) {
+    navigator.share({ title: titulo, text: texto })
+      .catch(function(err){
+        // El usuario canceló el share sheet — no es un error real, no hacer nada
+        if (err && err.name !== 'AbortError') {
+          copiarAlPortapapeles(texto);
+        }
+      });
+  } else {
+    copiarAlPortapapeles(texto);
+  }
+}
+
+function copiarAlPortapapeles(texto){
+  var copiado = false;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      navigator.clipboard.writeText(texto);
+      copiado = true;
+    } catch(e){ copiado = false; }
+  }
+  if (!copiado) {
+    // Fallback universal: textarea temporal + execCommand
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = texto;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      copiado = true;
+    } catch(e){ copiado = false; }
+  }
+  mostrarToast(copiado ? '📋 Texto copiado — pégalo en WhatsApp o donde quieras' : 'No se pudo copiar el texto', copiado ? null : 'bad');
+}
+
+// Genera una tarjeta visual (PNG) en un <canvas> oculto y la comparte/descarga como imagen
+function compartirImagenTarjeta(opciones){
+  // opciones: { titulo, subtitulo, icono, color, filas: [{label, valor}], pie }
+  var ancho = 720, alto = 960;
+  var canvas = document.createElement('canvas');
+  canvas.width = ancho; canvas.height = alto;
+  var ctx = canvas.getContext('2d');
+
+  var colorPrincipal = opciones.color || '#1B7FA6';
+  var colorOscuro = opciones.colorOscuro || '#0B4F6C';
+
+  // Fondo degradado
+  var grad = ctx.createLinearGradient(0,0,0,alto);
+  grad.addColorStop(0, colorOscuro);
+  grad.addColorStop(1, colorPrincipal);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,ancho,alto);
+
+  // Header
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '700 54px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(opciones.icono || '🐟', ancho/2, 110);
+
+  ctx.font = '800 38px Arial';
+  ctx.fillText(opciones.titulo || 'MYYAX', ancho/2, 175);
+
+  ctx.font = '600 22px Arial';
+  ctx.globalAlpha = 0.85;
+  ctx.fillText(opciones.subtitulo || '', ancho/2, 210);
+  ctx.globalAlpha = 1;
+
+  // Caja blanca de contenido
+  var cajaY = 250, cajaAlto = alto - cajaY - 90;
+  ctx.fillStyle = '#ffffff';
+  redondearRect(ctx, 40, cajaY, ancho-80, cajaAlto, 28);
+  ctx.fill();
+
+  // Filas de datos
+  ctx.textAlign = 'left';
+  var filas = opciones.filas || [];
+  var filaAlto = Math.min(76, (cajaAlto - 50) / Math.max(filas.length,1));
+  var yPos = cajaY + 55;
+
+  filas.forEach(function(f, idx){
+    ctx.fillStyle = '#4A5660';
+    ctx.font = '600 24px Arial';
+    ctx.fillText(f.label, 75, yPos);
+
+    ctx.fillStyle = colorOscuro;
+    ctx.font = '800 28px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(String(f.valor), ancho-75, yPos);
+    ctx.textAlign = 'left';
+
+    if (idx < filas.length-1) {
+      ctx.strokeStyle = '#E5ECF0';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(75, yPos+22);
+      ctx.lineTo(ancho-75, yPos+22);
+      ctx.stroke();
+    }
+    yPos += filaAlto;
+  });
+
+  // Pie
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#ffffff';
+  ctx.globalAlpha = 0.8;
+  ctx.font = '600 18px Arial';
+  ctx.fillText(opciones.pie || ('Generado en MYYAX · ' + fechaHoraTexto()), ancho/2, alto-40);
+  ctx.globalAlpha = 1;
+
+  canvas.toBlob(function(blob){
+    if (!blob) { mostrarToast('No se pudo generar la imagen', 'bad'); return; }
+    var nombreArchivo = (opciones.archivoNombre || 'truchaapp_reporte') + '.png';
+    var file = new File([blob], nombreArchivo, { type: 'image/png' });
+
+    if (navigator.canShare && navigator.canShare({ files:[file] })) {
+      navigator.share({ files:[file], title: opciones.titulo || 'Reporte MYYAX' })
+        .catch(function(err){
+          if (err && err.name !== 'AbortError') descargarImagen(blob, nombreArchivo);
+        });
+    } else {
+      descargarImagen(blob, nombreArchivo);
+    }
+  }, 'image/png');
+}
+
+function descargarImagen(blob, nombreArchivo){
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = nombreArchivo;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  mostrarToast('🖼️ Imagen guardada — compártela desde tu galería');
+}
+
+function redondearRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+// Abre WhatsApp directamente con el texto ya cargado (no depende del menú nativo del sistema)
+function compartirWhatsApp(texto){
+  var url = 'https://wa.me/?text=' + encodeURIComponent(texto);
+  window.open(url, '_blank');
+}
+
+// Comparte: si el selector nativo del sistema está disponible (navigator.share),
+// lo usa directamente — el mismo comportamiento que un botón "Compartir" normal
+// de cualquier app (WhatsApp, Gmail, Telegram, etc. aparecen solos).
+// Si el WebView NO soporta navigator.share (como ocurre en algunos editores
+// tipo AppCreator24), en vez de quedarnos solo con "copiar texto" mostramos
+// un menú propio con accesos directos a las apps más usadas.
+function abrirMenuCompartir(datosTexto, datosImagen){
+  if (navigator.share) {
+    compartirTexto(datosTexto.titulo, datosTexto.texto);
+    return;
+  }
+  mostrarMenuAlternativo(datosTexto);
+}
+
+function mostrarMenuAlternativo(datosTexto){
+  var existente = document.getElementById('modalCompartir');
+  if (existente) existente.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'modalCompartir';
+  modal.style.position = 'fixed';
+  modal.style.inset = '0';
+  modal.style.background = 'rgba(11,79,108,0.45)';
+  modal.style.zIndex = '200';
+  modal.style.display = 'flex';
+  modal.style.alignItems = 'flex-end';
+  modal.style.justifyContent = 'center';
+
+  var texto = datosTexto.texto;
+  var tituloCodificado = encodeURIComponent(datosTexto.titulo);
+  var textoCodificado = encodeURIComponent(texto);
+
+  modal.innerHTML =
+    '<div style="background:#fff;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:22px 20px 28px;box-shadow:0 -8px 30px rgba(0,0,0,0.2);">' +
+      '<div style="width:36px;height:4px;background:#DCE7EC;border-radius:4px;margin:0 auto 16px;"></div>' +
+      '<div style="font-size:15px;font-weight:800;color:#0B4F6C;text-align:center;margin-bottom:16px;">Compartir</div>' +
+
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;">' +
+
+        '<a href="whatsapp://send?text=' + textoCodificado + '" onclick="if(!this.dataset.tried){this.dataset.tried=1;var self=this;setTimeout(function(){window.location.href=\'https://wa.me/?text=' + textoCodificado + '\';},800);}" target="_blank" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:6px;">' +
+          '<div style="width:52px;height:52px;border-radius:16px;background:#25D366;display:flex;align-items:center;justify-content:center;">' +
+            '<svg viewBox="0 0 32 32" width="28" height="28" fill="#ffffff"><path d="M16.004 3C9.376 3 4 8.373 4 15c0 2.34.652 4.527 1.785 6.39L4 29l7.86-1.748A11.93 11.93 0 0 0 16.004 27C22.63 27 28 21.627 28 15S22.63 3 16.004 3zm6.97 17.07c-.293.823-1.452 1.508-2.378 1.708-.633.135-1.46.243-4.243-.91-3.56-1.474-5.85-5.08-6.027-5.317-.17-.237-1.444-1.923-1.444-3.668s.91-2.605 1.234-2.962c.293-.323.638-.404.85-.404.213 0 .425.003.61.012.196.01.46-.075.72.55.27.642.918 2.218.998 2.378.08.16.133.347.027.56-.107.214-.16.347-.32.535-.16.187-.337.418-.48.56-.16.16-.327.333-.14.654.187.32.832 1.374 1.787 2.226 1.227 1.094 2.262 1.433 2.583 1.594.32.16.507.133.694-.08.187-.213.8-.934.16-1.247.107-.24.213-.4.347-.534.133-.134.293-.347.44-.52.16-.187.213-.32.32-.534.107-.214.053-.4-.027-.56-.08-.16-.72-1.74-.99-2.38-.262-.625-.53-.54-.72-.55-.187-.008-.4-.01-.612-.01z"/></svg>' +
+          '</div>' +
+          '<span style="font-size:10.5px;font-weight:700;color:#4A5660;">WhatsApp</span>' +
+        '</a>' +
+
+        '<a href="sms:?body=' + textoCodificado + '" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:6px;">' +
+          '<div style="width:52px;height:52px;border-radius:16px;background:#2E9C5C;display:flex;align-items:center;justify-content:center;">' +
+            '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>' +
+          '</div>' +
+          '<span style="font-size:10.5px;font-weight:700;color:#4A5660;">SMS</span>' +
+        '</a>' +
+
+        '<a href="mailto:?subject=' + tituloCodificado + '&body=' + textoCodificado + '" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:6px;">' +
+          '<div style="width:52px;height:52px;border-radius:16px;background:#D14B4B;display:flex;align-items:center;justify-content:center;">' +
+            '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>' +
+          '</div>' +
+          '<span style="font-size:10.5px;font-weight:700;color:#4A5660;">Correo</span>' +
+        '</a>' +
+
+        '<button id="btnCopiarMenu" style="border:none;background:none;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:0;">' +
+          '<div style="width:52px;height:52px;border-radius:16px;background:#8FA0AB;display:flex;align-items:center;justify-content:center;">' +
+            '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+          '</div>' +
+          '<span style="font-size:10.5px;font-weight:700;color:#4A5660;">Copiar</span>' +
+        '</button>' +
+
+      '</div>' +
+      '<button id="btnCancelarCompartir" style="width:100%;background:none;border:none;padding:12px;color:#8FA0AB;font-weight:700;font-size:13px;cursor:pointer;">Cancelar</button>' +
+    '</div>';
+
+  document.body.appendChild(modal);
+
+  modal.addEventListener('click', function(e){ if (e.target === modal) modal.remove(); });
+  document.getElementById('btnCancelarCompartir').addEventListener('click', function(){ modal.remove(); });
+  document.getElementById('btnCopiarMenu').addEventListener('click', function(){
+    modal.remove();
+    copiarAlPortapapeles(texto);
+  });
+  // Los enlaces de WhatsApp/SMS/Correo cierran el modal al ser tocados
+  modal.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ setTimeout(function(){ modal.remove(); }, 200); });
+  });
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  ESTADO GLOBAL Y NAVEGACIÓN
+// ════════════════════════════════════════════════════════════════════════
+var vistasContainer = document.getElementById('vistasContainer');
+var topTitulo = document.getElementById('topTitulo');
+var topSubt = document.getElementById('topSubt');
+var btnBack = document.getElementById('btnBack');
+var bottomNavItems = document.querySelectorAll('.bn-item');
+
+var VISTA_ACTUAL = 'inicio';
+
+var CONFIG_VISTAS = {
+  inicio:        { titulo:'MYYAX', subt:'Conecta · Monitorea · Crece', render: renderInicio },
+  alimentacion:  { titulo:'Alimentación', subt:'Registro de raciones', render: renderAlimentacion },
+  agua:          { titulo:'Calidad de agua', subt:'Monitoreo de parámetros', render: renderAgua },
+  crecimiento:   { titulo:'Crecimiento', subt:'Biometría de la población', render: renderCrecimiento },
+  alertas:       { titulo:'Alertas', subt:'Avisos automáticos', render: renderAlertas },
+  salud:         { titulo:'Salud de las truchas', subt:'Sanidad y mortalidad', render: renderSalud },
+  reportes:      { titulo:'Reportes', subt:'Resumen general', render: renderReportes },
+  asistencia:    { titulo:'Asistencia a prácticas', subt:'Control de tareas diarias', render: renderAsistencia },
+  contacto:      { titulo:'Contacto', subt:'Soporte y especialistas', render: renderContacto },
+  clima:         { titulo:'Clima', subt:'Pronóstico para la piscigranja', render: renderClima }
+};
+
+function irAVista(nombre){
+  VISTA_ACTUAL = nombre;
+  var cfg = CONFIG_VISTAS[nombre];
+  topTitulo.textContent = cfg.titulo;
+  topSubt.textContent = cfg.subt;
+  btnBack.classList.toggle('hidden', nombre === 'inicio');
+
+  bottomNavItems.forEach(function(btn){
+    btn.classList.toggle('activo', btn.dataset.vista === nombre);
+  });
+
+  vistasContainer.innerHTML = '';
+  var div = document.createElement('div');
+  div.className = 'vista';
+  div.id = 'vista-' + nombre;
+  vistasContainer.appendChild(div);
+  cfg.render(div);
+
+  window.scrollTo(0,0);
+}
+
+btnBack.addEventListener('click', function(){ irAVista('inicio'); });
+bottomNavItems.forEach(function(btn){
+  btn.addEventListener('click', function(){ irAVista(btn.dataset.vista); });
+});
+
+// Exponer función global usada por onclick inline en HTML generado dinámicamente
+window.TAPP = {
+  ir: irAVista,
+  guardar: guardar,
+  leer: leer,
+  idUnico: idUnico,
+  fechaHoy: fechaHoy,
+  fechaHoraTexto: fechaHoraTexto,
+  formatoFechaCorta: formatoFechaCorta,
+  evaluarParametro: evaluarParametro,
+  RANGOS: RANGOS,
+  toast: mostrarToast,
+  confirmar: confirmarAccion,
+  compartirMenu: abrirMenuCompartir,
+  compartirTexto: compartirTexto,
+  compartirImagen: compartirImagenTarjeta,
+  version: APP_VERSION
+};
+
+// ════════════════════════════════════════════════════════════════════════
+//  Se cargan los módulos de cada vista (definidos en archivos separados
+//  pero todos comparten este mismo scope gracias al hoisting de funciones
+//  al concatenar todos los archivos en un solo script)
+// ════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: INICIO  (menú principal)
+// ════════════════════════════════════════════════════════════════════════
+function renderInicio(cont){
+  var alertas = TAPP.leer('alertas', []);
+  var alertasActivas = alertas.filter(function(a){ return !a.resuelta; }).length;
+
+  var alimentaciones = TAPP.leer('alimentaciones', []);
+  var hoyStr = TAPP.fechaHoy();
+  var alimentadoHoy = alimentaciones.some(function(a){ return a.fecha === hoyStr; });
+
+  var registrosAgua = TAPP.leer('registrosAgua', []);
+  var ultimoAgua = registrosAgua.length ? registrosAgua[registrosAgua.length-1] : null;
+
+  var saludRegistros = TAPP.leer('saludRegistros', []);
+  var mortalidadHoy = saludRegistros.filter(function(s){ return s.fecha === hoyStr; })
+                                     .reduce(function(acc,s){ return acc + (s.mortalidad||0); }, 0);
+
+  var html = '';
+
+  html += '<div class="banner-myyax"><img src="data:image/webp;base64,UklGRqJUAABXRUJQVlA4IJZUAABQKQGdASrkAqUAPlEijkUjoiEhKRU7yHAKCWZuiGUTSgsGhYE+78gf6Xqw439R/tv8x+4ntDcg9lHtb79/lP+H/gfnH/s9ynv3/E8zXov/qfdr81v996pv6X/uP/H7g36z/9f/M/kn9KP+1+3fu6/xf/a9RH7Tft771H/T/dH3f/437VfkC/pP+e/9nr0+xv+9nsL/uN6cX7k/9r5V/7h/zf3N9qj/8ewB/9va3/gH/o4aj01ebP7fxL8+fyf3H9mPOv2kal/zL8t/vP7X6b/+P/QeO/zQ/zfUO/Lv6d/qPT3/H7lHff9z6Bftt9p/33+Q/eD/QfEJ955zfwf+o9gH9e/+lyC/sXsC/1P/Nf+b7qvps/w//Z/rvzC94X6L/qf/P/qf9V8hn84/t3/C/w35N/PB7Y/3D9kz9oP+4e+3/oDCLatqT5ryGkiouBaKJl4KdKq/91RbS1m7j8KYbwelwZx6Gj1SQEXuX+SoBnM6Ub8sEs+Z+/yRRM1rENf3A//hfsu4e3xP5dCKskQskHjpyP7sLhTRSP0qg2jHtIG8zUs72RK6LLG0Lvls5SznvRS2qIOhrUi2QfIPFHp2GpRKweNXacGG6Q84vlmwvOYZ4QzO9OxMGGtLsqo0k2r6jQ+Qnf29fFcZO5G11Xa/R2Ixou6LMHzo6N31IQCrOJBBRwuXk25ShAb1MARiJ1AAR+MQA1vtkoHY7THqWFOt7oJPv2r6mPJ2T7hf/8Yqd1cLJTP03nCi9Jcw7OQXKfWICcdqr0XacEK/XKWSI4+ZKwkpihM4bTFR3ra+7K57b8JhdAeJW79NO6L8/KCYxeRvi78dWD6Qv4iEVuwoP3Zq3Sh8jLoXS3Dy3ORGqFdBOgkyzHX2fBNnRcIqsOWJesvJQaUvu+QO3psu9BGAwx1EsodMPg1iRihctQJLjaNXyumus610E4Oh5q8hv7AfbDTf5+t20JhfC8hp4AEd8zgzi7XQBvy9aA48EdM3ezi+FSGSOIzSfoZqDFdXR0lotRyPKKxG+fzZgA4CbcL5KjFHht/cVDbmgxs0TK2WY2H6OccWNh4y/GUNLqv6RzyPj2djtqcpx5TwweBDWP607zMHKluo3NeJdjz43bDPyN0w2PpB5VuKcn/bPS5Xol/h33UJ1qOtHpnQ4PzL9MbO8I5YEvNViuomLqGGA97y0mGkfAlEF0D4W2ibcNmWrr+/74usYkoA90uYO6ndfidPzvHPlAKSRO4x79G+Hg1qC8L3DCvAJRc4mGoRG0YXBTVSAnQK6N3CUXpKFPGPx1af5sp7b6og7Jj368vae7x3j+8msHLQZm05mTfr5elRXImXeG7z8HU42ySN6O8FhY3YL4Plp4zMdE2Ml2qHkx4p1/itZDKuPRqFfj9BkHcWhFRxprDNWGeX+rfk+LSt4x5nhJBdvFscAEJ54faYyAoLYoTfivv7YwHIPNyUU981NPEjgKOKV76BPpCFk9MF2Kr1cWDdQbk+MQQwAmrqrYdi5/y+aOWL0KvwLN0oUrB8BIXfX7T5l7m+UxjMR+SPJnuO93pFCfnLtEdDHNs8g56xZlCMmGsMTb0UgHg4+k8BAhWvTw0fAC1QaqdlFTf3YImD/KvtjylsEk6l8wmyyfT0ZxNy8cP0kNkxznwo08//wGb/ixER3B9FHS9ZpBWOxvcp6tQWw41+EGK5SvaovNvPwWpdpDXIQ+YybCuStKR6Eqkfv/gGUlFelDBTc7ChvA7g1u9pdl1J2f0sH5TeIXKO+XK2xcXLpWq9B1G/y4RCpDUaqEn28aHysNAKP1oS4PGgUUAPyWcgj0RcNSsLG941is9dXHj1/GIhJ9MLVLg1GSdGOZGzSwG1JrndFvY65XqA2T7rG3qOA6ai8zUzH8tXX28DEGSFY23MvoDxoWV82tM+mRrkVJzwJHY79RwuSwLkF8Z4bcn0IVNDSS6UELbbM3jY7tHs3xxzr+TmqnEXptBbupztkU2Z5tLMuT2+ju2Z5TA2/4RiZXOy/M+I011dsowtFfCb1AwFwVhJDn6+eNUcbjlxCLmoYcONzGW8QxHnJPUE+BBFG+bLfvk6N0vv+fDyKYzTAg6jXXhXLmh6238+Tjc4/DGY0SZcaEY87ZTvJOYGksLDSFkmzmJY9zw1HEpxO6pwm0Wk0pesifJxnTYREf/Ta3lk/ATQtiDJLAR4mf2USjeUTG6yFBI0S2Xlx1gokjqbR/Omq63cSLilDoQZMixGbcD4OlLB4bTkfsAwgciPfkCussRrScvNmy6cZ6qg3AJuQ+TpJ2QPcHLvy7MJC3Bg5t/bgZKueRt+8TcECL233XakVYekwbQTauu7q9WXl74APioKxs1b9hRKqhMyBE01DU7bH/5GUAtFaDmIjTsRZdwdNJhsyckiLoL1GVCMrU4CzHt1V81yuWJBh3L3fecVXVlG+AAyhNdmshaYNleCOA91EfbadBm2Z8km07rKbOsOJsznPYQ2NG/on/ERaAKd8vf8dZVYwdwGA0uiyVkj/tPhcZBTQ4a3juGWo+XuYfX0M8auOVJVLU/CHtCPZK+x5qVVOFVPdiPwNz08B0n9BBq74zDemYwmYUNJkbk5i7Oes+AmOgZ9BOHcjYv+MuYA0dmAl/g8AwLz3J0x9PUVABXPNRZs65SEuy2qqf1QlgmCmAOhof/hdmC6z071w0ds6p6RUM+pL0EAIriEWVPW2h/tRPd2rVUVFvcsKiEdwbms/iP5NubzHfcb7PeWSAfDaNrtPHWFa5bakj2M6HXLa4A8/3BZwEp4chsplGpRKPaExs+J2qmINxO24I4WR/rU2Wj+jK4gqnCSG1G7xIFa9pAMa6DhVXN1u1vIAe6EnYBzFfFMniu79vADo2Fl0szzH7j5+/Enb1GYPybbIj8r3Kk9OdCgyrlmrCqVyPlil3fxXEX8NZkM4+UCNHWYjt/dhM8Wtsp4mF3xbVJ/Tn3q9BWHpHyff0w2NKD4Cmx/yzQWKoJ4qxcANaRooo9aO17/tayDzevLHxBkr8gUgB/tzMI9xqShlQjtVrzCF9fo7zkeSdel4YUKPo//4dnraw386kmwSvorsdEYn1mROdcuWQAUEeSvWnyCW5ljPhMa9cmRbt7H+OUhEykW8tQBG8mVMpCU9ITlTSVDq/Iu/ZEPlFJyBqwL/jDxz7D9XJZUVHTVVcm9gAD+9doBxpz+CpMJjyoqR2YzIbCBc8Drsq2SmHyaTQzK+NvZW4rTxS/+Nsbkew4XLH0AAMuhGtN7toAnLs9CjbY3o2v53rgxSv344X1JbjWGRZdSxWcTjAPr7eqXRfNkWAiG+ekLdTh+AMGWMGiNrQXNv8I4HTLh47jd1yD7GqlrlEbZsgCN9/1SoRwu2dTucu1mqwUC88d/a+3hoInjusCyvTnsyA6aDUUvsjmY0EOJ7a9nHO54kOq2Mmi/4JoBkXIWsiXJFuOS4ezWNPQgsHiI5Dq37ZDxAlvalh4JApLYy1bCRCGDESWJdVAYcTa1yBxnNHdUHDk7kVxAPmaWeebrj3mw6b6ozZELEzPFtvZzbK6taLUbRmsjVxydcQplMz/dMZvhIXOhAh1bguKpMpelIoNjSjkRq1tFpr92VyFl4Wk1j+cakDqd/+oOIX0EQTGPPdFhYExpne9tC/u1n1cyb98PXbFF+hewJjzIcczsN3z8hZd4UJ7e61ncQhiHD17dQhSB+ca/OAXES1OtNBumLMp3AQKAB7MXRJxn8OC15/yIzrN4ZrOXW8ugLCmdVJqAvdrqg/Z7GK0QVblPUrPuWhvtBGqzClITLySi3NsObLW4ebcJNLbJdDd+NSWbkYq3PnCfg+b76kUvFu8NSp+aRC2NOUKo23ioaaiXVO9OuuMzxFaP+wUcCyhAqPhKj0L7YEh7b3RhX1sQAiiS/cBRzkOLoOlGOv4kjo2vAAMimxJOYBLUoGAYLGLGU0/BqJ1MXcNwB1UpCFFq87EVN/R2TIlp63TR/rS1UZgTdtOIljevoLualWtSU22bxpZHT14Ksw3sWHdoC1cbOWEbn/b3Lm5xGi/a1n8VTfMllnb2MDXH/e7NtqKwMwTAfna0L0MqVCybc+2zE/dJ0KENIchRg+J+nHI7o4UAf3CRGCSA1uPi27YW1kmyArr+FinhMDit6MjOrG/GzvNKaCi10xmKR7AfOoBsYseNtPovXI5AhswBnwQRlazVjAGMJEwAGaE0lrgwQAxoARKWmsP1hMKbyiRwHEd+JdAAAABVWuCIXhw9S+2z8I1v/3yauPeVuUNmxINjqD8rpkCWEhFI9VMjvUfBf+TuQkIVMbowWG/s6eiFg8Oe0/4t/5LyfmD82J77fdSc2AGDwrNCCHtV9lt7FefQYjWMOr9ou6xKP2C+Qg5lS47335dFtzdDKzYDWaKiQnKVf63hc7dglk8AgE7HFMYz+iSRyClVbEj7DK6FNc2BMc+DRMCJinSbSj/YgKcYb6ZnZcG8VFqf4Lm7d9nWVgqgot4ljnbbuIoI5irxmjRZLoC5SdawOpa79V9lIqLzOW/IjLtruA50Z0aSX7aTx1RFu8eSAoeVHADBJJk+gEF4eS/Jn0z68+GEhT7Cp9/LXNvlh/AYmQCLPeEfzr04tNyz5oo7xN2dncfheLdk/+Wss6wPePCQ+gNsG/+0U8+b35RMdZgVIb0iu3oC9guirny4VX+JBWZ8vmbojubrx/5tXRZVGJr7HLnXpCgsf09x0MBOj8TducFtpvS6fgy8dCaaqCQ8RXok758lWEqphOm3KiIdEBdHKHD3+A/2zS+evhG7z84WfTZpZcTzX/DyQbw/brdsHJxe7FqMwNqw6DUlnch5iNdSXj3Kr7Nqv1/gIr7oyxhoFNcU5QRvZtrRWyt1vgfpf/b3IukaafaO6lm4foaUUEZ8SQ5Ph/MatZUJ+l1LRaFv6f3k/6pu0Yyu4fKUbOemINK4kQs9R+cUkSGXxo+ehVRzJ+Y4pvtv8xOdKHZRFpI4V2usZPNGO/Y1e5PrrDfz9cwS6KzmVaBfLdmOJXDDeC8vISFiId7UL4qie+E+ozplmOFlRw3SV7GX/BXTAGrQuBdWplsTlsGx3ScFzz6134jGn0VE+8fYY+4DEQKoC6PLMoGCu3sdY0iaRbKvKgSAlXzizQZGBWvHyA6M40UGZVQTFb8/n1YU3sJqnDhhmZ2FA2XG8qrMyn8qO7t2oTpEwnvQVtQIBdHrxNOFLIRPDF8RLWNYt6YMXu+v+wo5T7dx0X9AimnhKXXfpWrQMPH0slPNgcoRGbpndrtC8uRv0J3+HCIEzKJaiu8rXtxyWU5PvieXzD+o3LsYtfVihcoZYlBzFdqlaGWGZ5nuZ72GlluPeIS7pzw0DOlGtdEWiMTmfBh6hCDLrvBOSq/zG3aaaWdqEx7iLXoP9vjWuO8eBFN0Qe8LUHtNGnFXucAlYBwKgQYlQkjYIXnCqRqS3rdIqstvUGnMHaBT0yWVTmrLQxgU6RfrTVhhLyMArdlbqv8jNFlegD8VhEuBfteHKhoKTjyLBDnfpgZZQwC1MQAPmT+TNXKI5pU/i+DHZJdlbBJ3KPVbF5wgCbYGSoTz6LJDXoQsRek5fZGhS7mHedqPTpgg9jUKr4M9xpCVHr7Obbg7Yx7R3XZFBdWsM5vtjxylfulh5hThMVfthcn8VDuEwjnBkcMcoKxe7I8K2jSar8PeKmHgnRMMCiY0QSwL/sDXGru6PiB9tR3v+3cqJ1Jz5dGQbqRluyRWNJgP7QESJMPcTtphQnoR8rArORkWiXd2PCD8ccRIhF/8bUiR2sNGZlTtQ0UL2kAWIxWHiYm2f7qlmSu8yzV+3QnBPuCSpfzZUIoH4SFiuDh1QIwYlWHkHkUFJGBkPps1IWNiXX/ZQsfPSbFbU/nyhjn5aPKP0Uw+0/zhSM5dIpI9xHRM90LJSd+qKa0Ks5JJh9/ULZ1Zf/4AKPSd2SAmEcJ6w0E1H1M+N9nE4NqxelEK3TwBQ1JHzbfFEDLNzCaQb/DRhaftwmNAsyx4leXeLgO0FiaYIC9FUJc20dzDmkiY9/yn96/XGKc52axNOrbPAOB0q5ivthOzF+QUgQEP596ickWAPlMV33UKcCxvxETrQK5FOtLhlq+AmgfF9JYgnklyZDFjAsTrd6A8FwOaRoLR/MTWLcS/H0a7brkKHTUNH9BG1bnXgFeylfNeWMgosNqwlWXFO0KBN693T3hpq3qxIXYFb4XS0lvUZhx+sWrFLnqsSCkQBcOnSM0KZzQOa00DHRfLFSeOlWoi4V+quCwV3hRakuntXnnmyuzJTy1bveyFHsPMjgWNPv5myK2HDOhVGMjvP7BntextlYs4OISCDBUN89dvYLZl25JSS0QXfSb5w53zDbfnwrP+T3EhaPGcWLxx1Azv7sneXSXg1ixxeWxrZTr6aCtcYcvBdpmjCs/JDx89m6LVyj+vJDiEIWCCUZ+MwcTY/ft2qqyVKC15kOZEz7i9oI6R22MBDMQ3G/fwvfdaUPRAdOsnqZy26m/NhIClky0wGOq419+ZJEKpZqvTwKW30SKWn9CfYZVGnGjyaX7E8t4YB6snAEFltmhh8FRTaz65BstQGvec8ijZw+b0i7HIVb6+YfmC58vEjxgfxVBs/a8c4eVkFlGwjrjGDVnMq1YBisxBIr7n8kxIycx3X8jQ7MOEcclLsTwvz7+E1pBPZBigLLh3Z3JmP49bqO9U4QCecqlRfT7ny/wfVLE0g9Ub0XEF1MB1COEp4S9ZH0A9/4AdJ54DQ1EsK+lVnF5HMycS0wgxgnd9o87y+FOtxKORfwHNX0DY8ZEBrZNbpKlxZyzdUg8ceR1WvWD/7DJAn6w7Jh0OHUmD02rUsRYegXTI6cCbtYcYn41SIGFMjthfESV8ny6HLWRNMUkhomZv+J2kNjvzl2KHyO+95Yp9uDjOA6Kf+jwBy+QpQVW7i0VbiEZtxla2appzwT6y/eW/7oYxnXFpnqY07Tu0XklNze+nJAyoVMSO8dtttfw+F365Bppo22MzepsVTOspPk2+3GFtu68rfBy7kMjL3bY5yX21Mgn+9zYIRY19lRRrMhTj2Jd6tBPgj4EUWyoJtcHVpSU7xrGlcMC69Yfim4VpN0bJa2taiyQYj0jTo9X1aRjrrNHHGuFEBmM4PyT2fa4YbxiYNE9aqLAlMndxk05b9qpuwYi8ulz7f2ZwRn5lwMT53Uv/+CnznZN7LtIKQzfI8nzyBH42ImWK2zYEBaKPPU40EfbhhhDfI+DrWUiDkrAlth11hGkAa5Otnt/ZyXKCc77mnJQ5AjAUT0b+6m4HSfHurYnFd0DHIN7gUwPQqEFJepw9gNJwXfjmM8jNH/MP44hxLYm/9ZypONID+CbS7O/LzlvC+6UqLIDeJ9Jd1Xiu1FMKF/R8K+MtEKgeTQ0pUeK5UcK5Ww7q64owK9bsBosfbUtugvo7ro+TcUAXKjD5UCKcSBJ2f8vKO3ujmlrEfcub9z/z2ON5rndSkrVB8Y3zCBfFybm4QjICSiMHDugZmgK4yXa2xKShHZWW1CU8qchuU6YWLO0CZghWjemYuC9TS9+7HSpKsDSMvR2w6MGNC+UIwfuNiUb/0PEL5+0lQjLZagYnh2RrE3fkuPxN/SofSQP4dsIlf8uFVQnRhjjv3ED+pH5O6h4idibzr9ENqyMgIQXVWlcHufLi+pksSpLwFl535xJvLv59t2jsBMhaULjuguXOYylLszu3D7ifwMUy5p7dxEs6pX9kGK0xHc5RuOvgFf7vLkWn5BIE65CE7cnwGrQBedH4qaxeBXp7mssOMtyFJrI24imQboTbYsz8KDelFIHkEPtghiQc8VVXIlcSo5Es84xPAM5ccdVvak+Iok4y14zIVwgV45zpOh8wTOCN/3pAMO8RStR/mNQsKOZ4Vu6Vgg3VF0zDQ8ZaPIUfQX1qI6EypE7NLwn8p/jA5StJ1U2HipnlT6fcpPJvneIgzne6FdCuc2W60xb2ATPSXQq/a03qx2c549NU9c1f4bmUGvf0cfOjWIHSdPnu76tip3rG5RJIW3aifSlYyUA5FcyEAAvrp10BfkdkoilFaTAVsaE6ITA7qN4cgNc87RmIWKPpZe6XiyQFRM1KXPe9O5W928TfspAogycfs+BqyeWNDMWShiwL3hfm7N0TC0990rIwSTr+yDw5dN5uPeeefEyGFf7m0IihnS6V58tvbYnzbmhebL7PsVVXQuULwrmMkvPo446epmpD7iT3KcUtjhBuuDAwb/J7ApA1zxTTdVhhdeM+KED0nrUFS18UtwPyeHOf6XvN/gz8U/A+VAxF8zhiiTIBxpsPnufEmI9pUL+KFgjO/wIL4mJVql2i/0jimOtxHs3eCMxjCwNYTqSvsCRNpH5g/E8A0ihS2SCB3adEyqoPs+5O8J8noUyx3n2ngr/AseKT/73N4F87DzeSKeGt/1DUTvRCJuMVc+yiSd4CSd4beMBM/yTVhJkMV7IaTb5OEFEyGeGmaAvOzpKzNhH447oZAk1Nu5EDO+m5mLz/hhwuJYq16Qu9jsFE6O5k5YR5kToguvVTLGVo1xH2DBVqJXAk72+u21WqxlMvp04GfMOE+N3+xOnnO9+PPZ97OUOuY7euH/0lVZK+z6LspJ/nVh/BrN4EMJ8+JVZRtrkOMD8Fm8SvBATC65/Z/fGdqv8SXNMM8zMNt0uOzskBOndnCfq3Iwuc50t2x854Y9mzmy/AfTnIBlOFfZvkczYc/RQkAG4EzEI+piPvZQI9zjDHeHZLGaoMjy+jGGhAb3gKaAMcc2VdpS1iYiMA4MSOJFWamjeUCZfO3BLMJJonowR7y4gfm0XFqoSD7kLaLRtr/TSmx0Ret1s0UFVpStWePr4CgjjDUFUr+hbREWATbdmIFljOJO8RzL+fhs3oLtHBdXi/kw4UyPwv7T1w+dIPCQAQFN3rk8a6SwmPsufa4Ukx0HQuiRcyqUPiLfr/ITlI9TqYp3ohUxzT7C0Dv/rVs7ilq3YFaL72Fe/Ee9y0bdLuRrcyQ3EdEP4uKwqpfyksVAw/dGyYd7u63ftojvnxDNmJHy+1j4matl5PjVYPv70Mgrh1yAFlmGBpGYLYg5nKOgwcIEMpPVH2X03nN8BCPpbZcyKz4c9/LxX6H/aDL2uIb1wJcc5eupr9d5qdNYf5YpCGqpmHa458hryVLa2uSFSygiU3RtgUIIy7uG+T1NIC8jijVtFmFXT2TvqyurIhe3FH0XJcWo+aUSqUXjJl8emv6XYUiEVdHm7okmpbv3A0xVNbCvSQ589Wdzw77vfx3MHbhQOvIxDWIFWTay8TH3x+qMJOKehe8nxTIKoLd4FiVIqlwgHACrSVixWzZ3s+P+kgcSi50OknQBb7ijnfBwcao53M5bMId0/Ky+xR2gqBbi8Uk39elM/uIp8rMdzHHK5DmhYr6uHrjwXhNckra2ESh5sM5RO9YAD2nTWMMdTL5/g+sbNmFFhakO1oZmXQq6EH1Sl/VkGXYiNrGuSoVVVU+e42sBqdV8fk/bX4Sh9rjA56ZBRu/V1PCmCuF/HP6h3yNNHZ3npDIOm/IRQz/lEb/iOAFef1TwEf8xyi2MuEDngElFTY4rO3+cqmzDzMhbZK3m7ipnhG2qBgUPD95NbMuVbIYtiWNdPkibJvgtwP8Rhu6t1WdTDn6g5c2z3u+TRqGwZx6Dscrz/Nqb92gZtTN7ZRMdZ15DTJDFPMkxtJMJAep5Mi5/KEMJJHtHPUddlNRpVYM6L4VklUMQzFB8jMUfD2DC0LJ22qYrXL2WpC4KJqHq6Wh4fLEtrbf/RouJuC2xkGBw6N2zlbEmlRYKj8sOiKmhxRxN/ZIu3d3EeGgrOo3QvUVRX+u7nYbuMkP8CGPKJtV8lic3io32zPfvVz89IOvaxdp4RwWPm1xSEjwlpkQgUIgg7v/3mLf3xKuXvjBNIXXS+aEeyN32QaQObyV6FVJ+Ms7UvazFcd8GNq/J8nwq/i0rnvoZ+cPzWBNZgDLRLIHuACF8WEn7iiNcoW3m626f3HaygA9AgQ7iZBzE5p8iHaWzlybctdY6KbVVwSa3pBzClPUU1lzsYMJqW2+E2OOzXMMfgiljcnB5kUsvpbrflQqH4YIl7QrSu9jOMH5NqOfZZPyzdjN9M6B2nwBpD5Z7JpJ7N0ccSACUvJCSn0K2LTRpnTDNdGKJrw6Qi4Oji/q4nhSqEhHnc8ACOQHSWDQ3WoWJ2rGvsMFjDsQcI+jDSnq8QEh3F50CvvcFMJ5MLaCz/fSm6Bf4kkCwwaPTkNZkGSSZx+inO0wMz9yp6Rr5D3pSg+W1S4NMj6AYxO+qWQhIm/hLNWk/VHHKfp5n872TuO9p9mGrw+MG2nzxnbxsQI3dHP8g4dhu52C0LBcZ3wKLAoupEzYn4RnaB7DBIiF3EE8vBEo3SS0ccPy8yJJRlgfQWFE2LGDP14ii6FoYwHrLs8eUNr1FcKPtbdTkk6snCPKfGdumRYUXe5OiGPfUTxHuZaSCH4s2jDnJ7/M0N+/45CAAWqW30lFMKUPRPnZ0LtJ0GfzKmNRtUPu4mot35doinrX2d0o8pW7hnHzDoBj755J5eLPS+fEq7+Obrt4M7rfJRNPgbL655qXxRLIEb7v4BDU6QMSIPq082k3XEdKNbmbW6W2w/2xLbaa3yCAZ+lgCBtpo/vZgPSjfsHqi3wuIuJFLrLn7zjh2cqj79n28D/5ravSKLvpEnpHWyAfcuKRE/89JFOiu0JSBV3d7bO5IZw4wRvP0a7YYBmwYp7lePR513N8mJ8ZUK1bG77q6sl01dsUvjs8t0M6U/F1o7SHWUsNJygd5Z47PTpnH+P/UekURuHXFY8tNPjwNkSpRPCI6XKGA2XqvE0exi2k0kfnBmLwY5CsMAaUf6Q7pPysSmZ33CJKzeJuzwoFX/4B2EFFT7aIZmzLFRbgW7Ict5atoXmifxWXX+p/3hIEpbPuyA8B6NP1LAfS8faCRt42RjmASyxqSTaOimK0M1WJbDliSBjtnqgrma1FeUdJizUPxb3qLBRARYdTDEkOpVn1wC9DnFzlPoWhloH5cOyYiAQ3TPHx2n7zeNN5KlfdVmPugB6pdpB2eNcTvsf/DObxtJripZaInVo2PwJGIhzNzsW/Ddx0D5fPCzmUEfYXTPkx4099jB6wGmUFWinYnz+VKmp7Sk52KUauKq6584wUrcvxTCKkJI1HQ29aeS04Q76mYU1eDnYLZWVT37xOFuXPNfbnIwOxC24IdYQZqZOYPE4Fw4zvgSEwu1ukTbSLxolWhzyySgNOzGR/jXy7FWSx0U/xNfIcUl3C75HYUnQ+qeb2KncYjz5rJwR+wjWuPFqw+CsTTe8+4mIwwu9DBvQTX7YRbrjyxYrSKXyDSS+yTjwFeBUKF7zZ35NNV8hWHruESBQn2kGOLC2nhCQlP1YMAh9J4VWPb2Md3V7mHS20hQv7MUrbO8mu0ZMZt6ZejiOyYxW96mAUCaAkmmBwhnjTxsY1Bnh0uySDzd9qe6QcXGNcgHbF2n7CI74lspg4sC0y3nXvrumshD4iPj09gQv6huRB2XINrSsnmbsCm2ULLpX+soN7xmNNDVcgv9NaPuw2A1etI1nW6RlplrIpxHbg4KnnIPM4kN6MAHmFR57xcjJ72OlIHFD4YbBYv7qlfLBcAUCwaFUhBMrOAgJ77/K4Is1MJ4L5Po99ovQES8WateYLTQhKtE+NZGw3jDs5WVn+kQWxdHFLxvmnZlCBWPjKU7ZQZgVXVeF6o/dMDhwf/ux+CDo/fOXX2CRBXeneHzxUj15W7TVN4ntJkQqWD2HorjcRY+pC3oGO+tuxdVChd/gxnqKHqIhASeq9f7w8ofMVZgLzzpYspdfSjBAO0pPOJHAU3R8a3Lc0dLN6McEiLEdlq+JPEunZPvt/9zJnkRr3mL67y1/U7GFoP3PK9RP794fMsUjV0tS3BA2eV5xHxXHRw9y5bagyUiZsMWicD1WgbWpuy/UD8M8STeM7IK9//gehcX1cWQ1MRmravNbmP1acxf7Xrpx69bKY8ltXC06yjElg0CYRmtVs+7wwYitTiFc6iRytPKm8/va85WS3doVXM275+mJVebU6L4c2dO5yKp48v54eda2bxAYpv/hFc1exdiDh+OPvMTVbLxbZhNHPdyYovQ49L6ydwQuV04iuCqevszbM6pHgsV2proN/LoxuNOBBl8tpYWu7Ih0uMzQLFj00hx3ffVqcowGOiHJUdJbEbiRGSLXRMrsu6tqRzmlXC15O4hhPkA8Y5auc/3/MatgO02qyJtwRhR35rf1UR1E81xaR1bmCDZ3V4ZC5XdoC4n4D+xxnVLadv928fObG7XH9qA5RyOe7oyoL50JNfwu59L9whYOPTwaq51Gim0f6vCjEIniUBF+XO0rsFYdZhrhc9PysbyMI0CqRCWuqM3GEpKkSeWh5v2x5VaxVc+Ivk/+Vc2md4igso6xsn3jvbwstqLvJz1A9VsZOa8ESgnEwYO9bsI9jpYXrVepn9K9OAzSyApreTM2K39AiaIy40HqIQylO5Q1SIavPcLlrOy3mLZUPfeKoJL4n33IQq3OiixqvdvyigHkk4nWuWkXA5LhzWEPpasqNfulDS+Xjl7AQeuw4ALpmKcBcDBOsF9bhkz/y3NehqFKLZzp4+iEsC4HzfGbmNtSoWt/o/DrOnE4yMEI9MGO8+ehY+qpk/HtrN3tib16JKc/RxAyzgZC5Dhn8djxq5gBWqYDaaO2AeQoGXGMz8RhtGWTOvIbZ5OSWFQg7Know/mvI9ceHjEVBmws83cQRB+15ea7cMcr0C0zgHw58v7SWCTtNcuU14cFTOLhmtrFnm8h0xy8SSaXMmyJJIAE7sQ1FE8wANwMVrzX91RdyTzPAxl2i6aG6i1GsfajjtJ1BZt7zsbJCQjKGzWxOineuG2+wOcdZl/XKQZP8xbscvhcgoPzSKAnkh2n0Z235S9z56onFTGzIo1PSihjfLdCKMrN4ewUOs2X5FZZYZua0j1lM7vl/YeczlLpjQJNXcWTcUrxTLylIt8txLcDlirBSjbDV6/6Udm4nd653A+pq1wxuOJ1/f8/77u/xfo8ONMWOQT6q/zMRwZ/EEGyVrqcWB5PQyTjLLVjVNkDx6qL6qgGmXKIaZsFzjDuRTzs0V/Z1MPPm8kvUwrwd3WSd5jOeWWnt4AjpC/GsXnvjW5cCtri608bzXOkRwVbkHpz05MePpQJEqb5k1vzPjeoW32kF2wtncsGfHoRiaR30S/smW8pF+iPC0e5e1tebKjzF62kbS/gf47+zg3NExVp/deZCuOWON1Vw7K8ZujLdF2qpfE7D22k+Ux6G7jJ7BrKHWrdYn0m/F6deiMAEjty4Nq58/9VXkKH0WoMlix5Wx69wxDc/icgzv75Ie0CZ7MT+M8Ei8207b/GMj/cVASKDkDp8JiVxdbw+e4Pec6hgHvLamfbExT0gfpkKGQHPEGKMbyQc9swD6f2aGHV3hSnqys8nNEv3ve+i0noIyxLEpDX4Ejdi+2R/rF6C7608mSyuX72HnO5LpaN7mqUagM6CCs8dZZZbHu6P9lajzoHD85SwtIC7nTL1ErrmDTAJL0DKoqXopYqFG7CGIpT0epG2M2dOqSNG91jgu3Z+fB+BcAN8x7jWLWH76J8OuoUQctNzv9vjTxKXX1AtkW2063K4x8iOzcZ85FlMBDAgPL5pyUsMPi97/mkK2eaDtAdx17fJ3R9WGx31cz2Nc0X16LclPWToWJdRKFnL8qQilFPzPE7SXqAVc0CBa8cAfhTPAEZvl9yvq1xqAOcwZJqRig5bYKfcQv3ukj3SKEyB7uYoZPqZiCQbFmp8w3oCpyPCoY4b6JEp62U8xp8PmCCGO2B3b82AJw9BFHYk3E+naXAHbc0H6O6KgBHm7n0cwOi1GAtw2H7BO0E2xSnNyi6F+seE+TVr5wuzYR1uypVN/be1kCFeEs7Ccc1mD9iocKGfKy5JnOcGu6LECjSLUnIT+cYAr30JHjTyV6tUIZmZzsOJbi4UAFnFtT4hWgaVLatFAsI5HtWauplO7ZbTmcGLqJO8A0fbx/2rWZclB7RfZNs94uveuOGaIt/BWpGbg1A7mFwzU0qe5piWwaR3Lao77Ka5gNpYKa55WNIURkgrihqN3r1KQGJt8qNnRr2DaoyfKG28ZwadzzNt3T2QGMNJcGrZCGPGSgMYiHRydy/EPg/9R2m1aDbFprTZ3iIuLn8H5Ur7+6RZI7jaZO4tx2kj10wEEs1ySb29H6fzqutaUIr6UU2GjHf2ZN/laPJLpG7cqbbOPjhxcTj7NC6ehz/qukduNJXlY9Jy+L1HN7Ws+ac3AwvpGUQWS1GIZluowE5fRff2qGIhcDy0vdJ5t95P8CzMARCmrdDpzLoHsyPc93bJOT3yFtXSKhYNDH4+bE7GPRB9eyXqrLlmhHOstSGE9iLOl1AxBNriTalIm6OUxQ0hUYrrpX2u1M7va9DobYghNMAqXn3BcOl7bZbXIvAmtdFGAUo09oC/43xJjiiCR+pWm33Ji8Y1Z1l/pAJ5F4oE+U5F0+r5+F3qiEnpHgWTN4sliiaoSf4J5ejMR2JyB8XLZGNOHVLGpxLuz/VDfzfX7Rt7XW+KZTMj8rtA0Upk9y2U/3qvxy0HL4r/jPozSZxR+rfp0IqsDgEb3JeJpvp0L7QOQ0d+xlFs+u38jlL/I0rS9ed4BWQX/Y7B+NdN5c9FrAhxHonl4KvoDV5/2aMnev1cit1qEFJkvNa2lmNvaGwrTh3MgAAcR3vspn1jLlaZQ3SmBl8IAoyp835lcAnDH3YdAcu4X1uG4///aH+HhxG9g2qQ6gG1++4qps0Tc398m51jELaJcgUEsqbZTe7N4ODJJ6vo7bi4xrRhXfN5DRWz17XLnP67YOEvJBfuzbUmkoQ8VYsOtJeVVS4bZF16yaDHBtMARxUOaQ6jNd/62YHsJfLRkijDZGLG7kpNDF+q/NlhoSJNuXjhjhoqKRWLZ2ABeY1CZaE9/NUPzps/X031B/WWHXWtLWhsMpZjBRxnEGpPv+hW0t5WNgGVcGhIwePdChNSdRRitu1j8XBpA3eNRyC3mAmuWiNwz8uOVsayFamKPr9R/btwC6WBtLe6JH7QhIz9sjevP7Y1EPTwPMtOwi7Clo8u0mh5IXE+kp5Jn9kEX2aqfIwjODgL1Ki21Y1wghAl+232xi1r80VFJEnL7qWg1rMNEYjvsgMuvrfFvr9LtvV4qidKYICH6H980e3bRl+QLeNp0ajP0mdg6IGbZrIbRdbTRBwugPNT8vO+snQDVUE0Css/WPbNFAT1kjk6RyMvA31sh/nFeQoeADA7yGG+QnqsSr7VHsR2tYqAod0AJZhCUopQcdyC2Cx4XQduJ+wvFvB15T3nZ2AoaeHNyT9vwwz4Yzk9O45+JowpPfkY6bVTnMBTcuQXKUVOhth2sVxlhr3mzIiWLDBBk/xIway4n93J6zcTLNByHX0J8T6VTz1n6T6ZfXGuiCzShuMyiI1p3q9a+S92V9/qUuUxa+CtLub62pPZ51O0lcJ1sKQi666TmUyTwtm+5EhQfmPROmFn/avc6AdJ4yFZl5lshUxZ+IlXdxJMMpdJNDs9MydoDCen1wR/0ToKD6IadrGu5+buDF07fjT2eqWYjQ9CRbR2iA9i6OoOe+u7eQ/wo2/D0+2+a3gQjHq5SU1uEyqPMww27JHdAzZ+ciE3fyR9w+w7hnlqs4EinCmKj+zVeWaIQrtiLByxf+IUP77o9awcY3nBWW7LNBrDcSQsSQOD7n/lykeEJ01GP+5P7jo27Emh+fKzjN675NzRGiEhPgulEiZTw5ktsUDp9zbEDXx8YG5jOfsf6VWvgr/1qKb0Lrz0KCO1yl3ssTnMi5m0h5moXroxUjZubCiFkfRRz4TUQU9gMKCYiZPTU8otwumM5SL/bwDSaFbDBH6PEh4chc1O4PHYCm3bu5ZsGSSt5RF7J41mSd6Jw5Ju5J/4Kr28LEwRMjSNHwjbD2ZCtyHG4QDundH205YJa/VKEJI/TWOVdR7FBpHvvXqRtq05EbfPD9pTPz94aU2rOi4PAXalpXPMTx/cuAiDu8QIFMbYw7p2VzB2R9NnrJT5oyYdjfh86aQfSUNmSYZSKBUSS0bqklYVIe0d+jTM/2dl+bXK0hgbJrNViudD/oXmgpv6wszrenPnPOpS0MetRibE+vyMtNLZ5b3i1busZkUAc3Asg/NYPJSl4amRK5+nDQHUKg/i8V264tuAyhQe24xi/oO+z6CFhNgrZVV1vNez4bKMLmitcdQ96rzphWRwXycPbPr3gD5d6jkbRTectT2ThzTPvcyiyqSDf7dT14EAZtguNeq1I5pqFuiThD5WsP2QuWMmJCMwZuvckAeaoTnHggX+dyaP9HQ2nzGtkiGKNhPnm9vMJmze0qFL82s22SxXtNaLrPtSPpICCxvutCOQl2UVo7yLcn1i/47WL1DLw0olHc6tUVHPkWLy2UiN1kDGxJ1Yz36nWRWlhjZ9kY0/YjIEVUTcCX8jgm/0aXDDT1Qif7noGZyd+FsjtbuebpgAHvRRf7UQL1AhJzqJbJ2fP3E3jF/Bmkg0YcKvuRK0I1sx1yNvpNaYXW4L/l5HyuBVPt1X9N60T3pY0lrxJAUjjHds2UpCA3JZBQEmLojbabHvjyT285s8h7f9+ZsY3jB5yKRZjeY16hZ0Mhv0VHmzpeOEb4+U35tZ6osK/pg5C8kZB5W5q80FWFJ33E4fhcZoqxUDCTYFTXhuOHMrUPXhjGtXTmEjlTR+WKR+AledSs7dIVwAesoqhxEN+uiRviAn6NOxqeLCWftzZwcl4cj4Z+9OsdbLQ7mG5E4BUCWHF8kfwayAthTwBYykH3+vNea4r6y2NoLSjA7gNX9cw6EflUA1VcUzlFOWoM/7eq2T3Zzqtwhj+dYQo6VoNmggPEqjYJ8aUCqAHAC4JauPBNvTZeEJlT/0rN7w5sN46blYokK/DMVPbUD3zvh6Dx61QpuHyG2FnbdsKg5FzDdSd3oKkLpZ9E/jH9HBfceKgPKqHAC5sT2os3DnXk7TBI38d/NHsEh/5vmwSahtDl8GfuKAetgR9oRP0pVzdtDwn+Ancqs/Cz/xPfynzAZ/B2MZcYUnI8jBhGfgaIa5tJ8XCEYxjSVcYE7uKh73aCQgXtdLLi3CYVQ1xEJJplet3u5V+eVlFNG22r2CWoZSDqQHy9sBKqyuIj0fgUZMifISfBoPp7vM35ar/zex0/kU/Qgn9auPxkp9BA9U+g+0lDBuNbJylErsjtBgk07aKJdHF6FSwi/X8iTFrQ38UCkI6Jd0bz0IeS4mjfKn5ShsfADw9HTG0AIqSAqndmgPWZysE42wOFV0ELjhCf/Inqy+V+IfZvPX/hDjIv0+O/WAeXCccmV6lV01L4f1cSo0EBElTugEwT4HJk1low4gEN67WA/8gl2/bt+DGwffAZgYcbmO+vTeiyrNjvlRlcfixPmPLEjwMLqRqqKJ+yVlzkyud1RWvFt0YrJjLxU4fiYSTpi5yik+5Ke8B4LFsoA/VrymM2dCU5FZ5/OgQGdkT1FrHBSH2THg1QCwAPGEqVNVMZi+iApoWlRxfiAGy+bV/tuAMFOorAjiQQQiULDEtK5XWVpXLilG3kCa64pB4EB9A+uX4ODKz3TDnmFN9VpmEYEaubJEiFM3tZdwqSgNfHSVN+8NEu2O3chg2wxSr7MSLS8ZnLw1T2gvlbM1fSBmAezkZH+0W9zF8GcRH+5/q3PE7N3Gol0DLujkzSVa6ZsVdBcMWM/45AFlItDL+EqqvTvljpDV/5GEMT+pu7PWYl4oa8dL5quYsfyGp8LcSyn+F88/0BrouWg8lKpcv/hwcS6I6hiQMrwof0b74IfY8A/G3qVT3hrEccF4RO0F8Gyu0YdSkCVIrYOZQqGYI/B88Nmr9oKaPJoA28AKJHazMipVl1q1TcJuHXIgtzakG7CWSwgAsDk0HOOuZVP5qaDoSTkR/gcHmxIRHf7/RhytrDf1aNP2h8KZwwW0Pit6WAEHQf5iWGdOmluGNej5IBffkiyvn+GH8Rux87z3/0OUVkbdeubcLhF3uQ7FA/U7O6ubDDz5da6kY+rche3xS234x3iP0Kvk3TcR8WbqkqBXRvLV2GUkRxM//UIbHDpAFkvoWd4cnD7VFwSaeJnOAMPJ4U2+uRx9fdG5CnPSMWzxg5pHOyOnogG0QtHQTNLjAZ7ogpt2ciXh/9HM5TZrtIl6GH522wKcQrAHdoKW1s5iyDG2F9adBxp+UnEKE8EJyXEJWE0tK3MU6yW0Ov9dN9r/mgMSUA7FuQJF9WEn8dJtvmbqcTBVNS3nGqbjFW6VTHbIfDqFaZTtvK5EN18rWXclB32VsD6nUOsaJSa0bTdAUqGVfPLxFeS0Rhcf/sGyP3fSNFNiXGif6pT0FxDU6TggX8SlQJl6O+/GtG1FOSi8cdKiHoImkI74PVASIa0LqUc9BDn6vyyRaNo3MD1+oWo54ftBo0Yl3FF6kKQN4RHkQpigT3h10Nfk0vGg6iJWxBWynYXlzDd1HGCdC7VcYjrgZcK8oua1kB92unW6hN94OaghYM5E8hGxcme2aIgtmXzWH5yzEbJFLKZ91lHY47KP8J4Le9kG/jNg5gY0Mw/6Jh09QQJ9eXv5JEwxSOU23a9lUUNIm3BxHo2L7hMA0ZqGwQzE+StJM6EH9Shwa1qZwKASWj3L/tLMPZmlmo+x0HNHKTlwCcFi3MJ3UOW2TMHzLLVPbfWPbhCFIAtfimOIZ4GUSd6Iv6vjWMHjkVoIu9Z81wXCWaVKeGXrAgi0fxrttJhnGOWfplpn7ljlKYjz7ywZTOusTOBz7ZJXw2x54pioETapymlmpyDTR+liGGRkb/985cijpHpTV1arHSnA6z1NPvr7D48EWjDPtdaAvyHCqR8UVBSgPCfueYCPurh9xHE5wgfG3Ufy8aKUFrCv2ZQDeeW+Ads8/rkuLUZuBgPJJt9rh+gIuoMl9qsGh8uSKW5uXHGNNCJyBiuMvhZzV7n2RsX0NpyFT2zHNp2O3hXm+P7f7Nj9Y7TSFZU1A9zuDt25+jYyqO2w3mYoqzbgsuf0J39BY2okPDJpSAPEic1Fr/CmbjW2WQbdBUqBQJE2mpBH8bH3YE+vF6r68Z7rgDH1XV2d35fp5x2S0SdtrV3C0LOs0lZnBcZCbwxjvYDdMpjwV7hRbUiPlIz/yWf6L3kvRUM6t6ZmHVHj+wXHFGhW4j0eu0MKgE0pCVum2a75UvC7Mm3c10bKTi//kSiJdMbj092Pv7BWEg/4FRe2HCXZhYl0ExoCIVSMBWr5fi1O6M5tzc8OF7LURsHR0UDDDYt2l/D6j/ypzxxbRuZbndqb5TVzEwOMlkzPzSJg85bzjP5reiHolzdV3rpMw6YyCD4RQUtwewS85BpPi3gyWyTNAso7U+cLVp1qgQKug5+f/Tk+1BZR958TuDugHZjWd8QGjKeBFJB4YNI7jzKfqND2oN1XSEcQPtKHG3nBanbMMf5kRcqT1Oo6jFXyxTKg6205LVfsebLbIlCDnwEoLqTbdt94j1vBWGXSejHEk95mzAMz2779uLXtv+SIS6Geyf4Dv3ZDvqgtuus3Hi+l5mM5eb8av09RNHPei2/DWca3On2792BQZi0d9wAV1Ft0xeycAywfVNO6BOFmXXUpXSh+MP+2FEavIizXV22ITyr7gmQSBa8ITy5HhXqCFdptHFOXKeAvV63NlBEGdv+zhQ9ugp9/ZaP7jEOO6I+gBm/CEFv99bjeCnvIpW8UfuATwxpQSsXnvQH80HqZtgptFlCOV/hIzk9qlpT3HHve0n7z2dvEnjIJMXqmNUgVAoxIvFSwPLRcg2RM1QSvHywvlGJdHr3oxb0owJ1nFG1q+RbQIA1K2jSNWcKAsnfsA6uxKoEVFL++eR60Zy1k++ptH97Mp3Gg1LjfKCE3tCFvIoaJm/3VWE9CQHIEqKouezpSInAGF0k2KE9RsxpmgMhgVuFoAyIEACMEHY/jJL31T4rV0SbYOnyJPoW+CTQMBJ/o76F9idIDLjg1FxADdax9T3Nrv5gnwNdIwENQvQqmouqfrf+4x3M+yw+udR1wDAjX9iVrNOAuyyIYVbbSbwsvgZUcyJBKSUep3h2iKCRsfiWCOw869/AyPvkXtfNRqHpuuqgVmOtRj/LGsvSKohGNoTLKrCKujCFDtY/Ct+hBiJYmC+PQw06OtqArhT90/XNVxRtGhZkdEDVZ8GLygDtrboaiFCCSZAXFxDiRM4dumXw0bMgIO0v/Y7cJAkh4ObpP8+CcFhdvBU0IYLr893aQ2INpGtsyUNOZXj+roZgywxnNr+Kl0603un6B1Z175KPE4lDl6gKlXdjtdaW1aj/uuRAz9TLALCFhYb0ruFj80/AQFYt7/iK/yRVoSbogZnHj3hvp27z+xNCF90OMbJ3kZ35oayep+65fVAAGCRtrqpSM6yCd/MtD+MeESZnOfwYM+NOv9XLgeE5UKE4bOZBCQ2AynKK8t7ODNcqa9AZKGX/HcGUo/NpKrTtTboVzfLGrNkoVGStT8THdlTn7GyXLvNitCYSM4Eert0i0l4AhTbFCBUbZYXvdMPc6OHqurfA274VeAGN/DAFZm45sCt3iXg4F/LomxJPh/A6Jm4vnNiEgZciNlz7jwr0eopSr3uk1JYqNlSsvpjnByCQOVRvq1gt3zGja43jIjoj4RYUdgyb211Vbd/i4w1cs+N/Udje0glNanInQVK5CkTTevuiZcbWeBZfsglgQOIv7pwLDHtH2++DYW1rMCumRmmNadS0HT35e8G7JUT4Z23gZD6s+ZvOdo5dJVed3q6jgIMnwN91O8/djLaIuo597mkZRn+ndmaC/yIPGKBf/lMGcyTLDOWb/kMadr8CzGV7Em6qU9zJNOQsWLzABQgR67u0YqjXlB+OGEUTsZNFZIXe/WdWxwejf8aam5XUKwbwqlaMldJ9Qvc5oJYNwjhJWqCiZvTjCDe4obJH4oL1549NLem4cXamNk67p4hqs3nvHnXtS+P1qKg2e5gZnuQStd7LWLvQ3jJH8LcodHMBWd+248JzSXvYQaNlE1HDHaSsxdm+/eMCfise7XEIXJbvCOaY8oeVePR71WLecKnDF9zmef+ePZ9p0aP/w4MDlPEgjVi6UM5IBGPXiadtxc2i4aCE/l8LsQjiL9HvmdsL/1TqVd8y5RWt4vFRLD9er2ETAu59SZMzdU1awvRykhRZG1nGe4mPUTT4yFEEHGePX/KovzdzJngdcoGxAXOYxsq+Zh6A7AB++WJhxhyoV4RcPx0pXQSC9z4B5TOgxKaIF8x4/FISr+Eai67ZNM27T6Zaj5/Yl5QFHkhCBJbOztr7q5d0a/c/+oYDGt34Ac+v43cS/TqLHtGuOQuT920loqEOOUhc5pmBBxu1PQYvGdNImpphIbvBZqzI1qE2DVOgOH8tt4vtbfLwqG8gOHjHaRRtpe/xQuKxIKEKvy8StOKagqScNWzNO2H5+ikDgsGzdRl5itaGDhRPDm5pUKwx1cZYeWG8+vBjh7I7/q3pR6bQJ+930ggw8T/CLr0WDg4AF33p31wja2dshMXOZTDZ5xj3qwQx7iHmA9dC/5hLtksCCgLfrH+Vld/O1otG1ayKxiHn38IiyhvkEsOstSXIndTRB0tZbTZonBG8CN+N0upfukhD9dkkUWIuRensLAA1YA+NWnIYkidzgJWo5WckpynXxUD1cooN12JPk9gnGPXKSwYmUY2crRPhMCxynMM6KJS0wfCPOHtJO/9GaIm4VXNu0c9BgsZ/ByKK7c+5ZN2S1jl0ZyN/0cDmKQ7aKhAcW9/peg/nCjLfbTi8V/4nqg9pT0eiXZjsXqD2g3y23HHIuPK87RRPPMKRQpUrZeMETb3qL3M0Lg8dBViA8s390gLkkYWaNICsyidupUBHkfGIZ9OyXxT8ObzW1aLo2bAsrhrlf+IIIkY4NBLMx6Mb3OLffVNwZ12LrwQDqiM0bktC8b6lkyu87JUMuvOiu/FU3prWNyBdaBflLQUqFVrWD2O+UhRs71kLRQ324gGs4HXe9mKoNxSeca5tnSrJPwJxZDElKanETHtcsvBAmCpi4Ep9wkLGrJ96OGqujQsRbxqNHEBMzSXe5pH/E3zXMIixMqd3PR0Q6C0mYXxMIUmsHdQBuIEIbU+87iR1GN7hTBSMOTqQ2TaD/vFrHke7QjG1LIafoWC6O6U3HA7edGkZ0l4Go6PLQNrn+ZYv2dMsS/+fNICNdBsEMU49EdMS4FJg+3K6n0Z7nzu57A9my1afcxiHc4L/DhEvMGr01DNB3yabiMYIQ5zPeOYHm2Ny+ihnMN2HbRrfE006KdNunqNiKJef7Dz34OUWBr74y/ypPEBiaClSjQ0QyCs6oFqQEGnLAQfykNntqh/BtWDjm1rWQ3pzVbbxPALkBdQpZjiyCtnE5+jF9TK0LHs7rDClokaZniLxDPscWM84f1bh7n4QkR+c38boG3RpHE3aM+OgiHV45x/gnG/PtIvugBqvvgDsGETmwWEkyvNfYAafp8+0zi3NcA/58xhyTSVYgSCaheMLlonJha7CFB9fLBEYnaivTmvFtubjyTUVUgMkuEAeEo+whUVJmcTto1jAblz73xBksip0EC/yW+Oc9OkTZIgYTvQ6FsU2SEtyfEzY1b1+sTDixYFcU1RwsxD5RCXQN0A4vrErkLDv+3uoNqruMSudoFSZ0PMEFIsFIIVigrV4I0t652ukHXyn9uLreYUm8F6YmMyHODh5YyZWN9NHp14Usn5JB8Aeiote+DyT6yPQByn0F2A5g4ce/46qT85ob2FipyXfQ7fNIcW4VMbmQBy+YtWFIN2YjIlAvU4uo1HRdPYZ0tA5jtGPGOhWV8/FMjafUQ7d9TRelrx33IQifKJwp7CMf/4nqH9Xko1z3RqyhvazT5QkXNJh3wkFNZn6BQ6Mx+NRCjRNCMrHTyvaU26CFNObS8bKmYyKWe+hXjKNjY99m64pI6MdRwAd8vQPeam3hC/olQ9IxETRvJZ6c87N8P4bKj7pl/LtFMqXS1T6W/DSHmx2yGyj2UmNO0rf7A4IVRUKJ4ohY2ZrWzDnLO2UlC6sfUg6HtNwlEvTPadJDPw+srYQ9/0XmeGaz2teogg340Jz8gv4qIAHSCNBSudUaKuGRuxdnK4W+hSoVJ1U6d9NdAklKtXMAFouU2WUXWlsOxvT8hY+lFO6+d5CONpaoR368xEXFanccqSP5NxZNRHIFXw2+dZdrjMBvUAdnYwASmBuNacFkW3czXYTiBmxevNPLYm1525k08x1RP84atKHaU/JptxMyl2yQISl4AJYW5dC7aT4pOLyAr29dwHPHIciF13xWHI3iJydP9KhlyuZ0SQ0PjKi5RRGzZWPR/WXaxcJS+hLPpKu6zdjbBA8Tt7JWRwrlvGZ5/6K+1G2YZUyWdaAv56nlS4I+xgjQCYDxeY5YIVP5y/4lDUJsB3aOTnS9j3LLOvzxMdRe9BhX7WjDfHmM9BLUwpeXc28wA2VjfHGZGw/35R/IjRDtYpGfNq0CtL0aKJyprOsgIuWksMFFTWClBWtTVEIHRnYgvV2cP/gWo2DhRjf1Y4jYr2AVWbSjI4FgQ9ZbtVCD2/sf3SwWJBh4YoiWGe+IPmxSEJqSkpaX3C/xtHWnqcCqSUK59T25XzW3+fExOxPIILBrBdEuz4RbX73Pxjq3vfKw+si2cf8kAUy8UU4eR39pnBJXeGeZdVCyWhrqRcXQ5myfyy5hmMFEtuWFjeifZeUQzyAAixVYEWcv5NuTOMCHvdJ0BbRnwfreiTpBKV9NwjiMn8ctuHjFS38r0z8tBNzvoRRWXgMLDe6LOK+ixCi2KcrUd8u/0iox22h3PCUrfahhATWEvCvFIXRjIdmU75P1ftr8g+3Dbv4t8J0P71QgZtXYFgHBGt8hBu3bV9aL4hMBOgh4IgZVE2J5lNP4Mmk9vnMv0AiVUR75NQFgYDwK5UbpZJuye8oQcU+nr9+7lwMFbbIQGi/N2uUnPUPy4hL19N8Ca5fEbkoVSBatF/mZp674HdFiNut89f2NkqR4vFVcGog7yYj3JsYp8ey2pNaYPB2aAzhqxpHsAjTEGkzwicV6RB2Si9voR7TuVk3dVIU8qMfDHobLRSw9fYinPneZl6NTv3yAM7cR6R17E5PzV9GmwxbqCY4jKvf3FFkSK+YzrhfgkhKM9MdYS4T7cMIsVVQ9hDFHtke6rjpxLrJVPWSX/L2lOY71KpKsuAi2FwDcgWwtFXoy3ITZYvS8SX9xneEl0vQg/eSPuLIoQvfUskl0UeOLblRicSgWQnx6SrQMREdLzN2gZvSua1IUX1dAh279NOZ1Fb0ei4QlC3wPXS6tTVY+2hGASnO+60AUfHMRYiMdVFZepzEEkNw9DEAgdeUJw0gq7I/BLgQThUEFvqkenc9HG/owZ8CunlKTa/NdbfNF63OYo7KtkzdXHCBTnwfNM4Hf2Bo8yLM0AQ13ndQQCaEPvqf+HrlhPA77u9sCFYC+8NptUQTw3zYQxfRmYsRRPuh4jgFj5M3PWJJnYvdPPjbjj188VVQ1vbSIJQGeUtXzu8CnL33MjEXXt2AKm9duhZ2At7h/0OG2gDbrfh7gL7bhTeMctrLSdrhDbRTzb1o0YymHbOkIeWxIf9htuxeuLcc7Sixto4OqwEAh8Mf9rFM/L6/4rPKjcBEjNr7FBkca4k9r5fGTK4q0VCsoqjq+6QGB5ZNjgJpmjeUu/sKmf7DwU5KocBl96PTZjqOyuwOg5yPF4bi7TFzuwy7Gmsqebo57HNzMkUtt+phagladFONBZx/TEmnReRUUJVcr0rrT4qC03TcM2in8n9w8NmLaclLSiP6bNMChaXgWi6ndUX4DgeTuSa+HDbIQ5zr/flCnOWY+OEBWl9C2Fr9DX31HyHfvmmswmY9BOS8sxjb5EyFbFPbM8+QVuRztt7evl8XbyY/D70dXyJMQ6CUbxI2Zmn0nhcXcWDWpc1wLRGY31FaijkrvO39eox/i7MXmiNimlvMlDGs0loTajHATp66wNdxAdQRYOoe3ujqVdnmv6gSj1c/IpPm0ZQoCVaKJcaao3ggbFPffp1Lv5MsFKaMB6hP34oqMmUx9FC54bhgduP4boopmvfn8Id2IeARu8VBqIRvxdwoeI0htNbhkBfFg5AIWIbr3P7zh5q40kJNTfzDeJGxjKqCyHw6lx/WpBVo5tdhPtPD8y1joWXtInYatyRc67hFRn568oTiyedgzs12vuK8f3VyHM1M7pfesFyVMKZwvTO/23t6R+7OEGpCct3icgDtWHcROgI9kE4ny4webNvLOBjT1ZCRtnMmfmjtfejdgPOcILc31lOcAPSdqdNrZOX8hPcUFSz77BHKVXKJSMQvhdeSb0bWmhuBb4sDSMLFOc9HpU+KxYbRP6ogbdIAeerM6mMWxyDnkU0M61kWzesXzjXcMcrMbYWWlUWUgro9KvZAHQuSUUxrVKU21ch7GNsNQWN8eSNr0SXzT478kFRFiVvRyUBnPUJ/KJOU+GB2Abv+7Npeu/iH3Xl93/UIBRKtiufoahNmXR/pHUnhrfwBYXeUeJRUQXJZeAGAGFkl5lRHWl4Q7iMmNPlnYZwNGgUTK78cEE3jjxPjqB6yubGSOppg1lEJCd09+ElkmxVADYE2buOSImKfU357ojJLBCp2fiwwYt2f2q7TTPwbLUnvVnBpZypQUHkLaW0Qv1L5fqy6PT5zYoI1YtneAOLkUax6SqtiFxad7nQ+twtXhVWRkFMYGPU3feS3NP92sxkjn9hrhWcps51MxJ/xcphzDUmEJycoC1BnKUI5vP+hecq/u+WSkXagKgTK8kbwWSmKjz+mVHncrIfgFq2YvHFBXjexoI6f7tTrbwlsUoCguSO8mj4MnfJ0fXBrPzw8rW8RxvcKyPi7t01BFqOtQQmZml10mcD686qfW6Ven+PBcdYMX8FlMhCQ1EfBGhFQ7QrU00mWQJZeBaoKirZaKJ9Trqv+KldsTk20+ziz3RiORt3jwzE5gFBsbni2PU3445HnraBLiHZRCzoUsK31n86KyyRH9nNCtREBumIAbj2ZRxmEXZSZz8jRPgmmFPrslnr/LPfCYxYPjhkn1sTAaD3kVQrFCsnmBQbFZoFTDRIJIgi1I+/wG8iOtc2dsMXIKwwPnuFTuPbctS2HJ3EysNLMsh7lsb0X2GeQ2H8ROYd0b6Rcw8IVMLAyhedvtAdhc97ZCtA84tbjBQJwoqDoeTwszX8EH7VZbXmu3tmiqrzMi6PC/LVF+aeOe9C8u0fzS2wUKSHZ67KtfCDJQw24MslucchL65mno7291Zt2ciB5izRvXeytHFxwQa1qoQbH8Qkw+wXdAOBWdpHZCDeDcwHYYtSwY6yNozDC8Alb7aHte4L91i702pXTG3C21mWTAYzZaKHkS9TmpPdmJuuC3hhL6teKMjM2HQFcud4F8yKSs+x0i+6J50vmDs7BjYCKjwp5ONjTbV/aC54NpEtjYqpEQV1cCae+7FZeV9wKLhC9wwQpXCLHtFuLFw4aVkKSh0bQC07VY7OItCA7iNzJe0MfH3QRPtY7NzE9j6IlrWDlF0UXYbPQobDW2vPqBI4cgACXaLplhwwBwZqiAX43uI25Le1fDQUG/m6IyTQPPWLrkN2v+chi25r5zOLvCV+MR48LsNrqF5KCpUl9uqcJcKDi3gbm8T5p9qr5VcAtKP1C+1iiRJuFNOGshYvajohQAdUD1Uso/r7GefNAuCi7Vxz2tgaS2F2CCnIEMViJj7yF0jg3CwWxU0BS45McDR999DA9man+9pvLv0d9BvCo0lIWvPGqsvz0EK2Q5hm/RrUdVBKTr31VV90VYuZ9u9lNbto/swEXHSp6CQe7/1pfka2lyCbXvTEOXMl0veK50CTLty8YW7dIN5diRYdcNOuVctEMxz2ymcxzMqs6wVjxyRvzNo/76yaE2cKaxo9Ve3x2Tm6UYEs/BRd5SNDnDWpd6LO3V1YawNHi38modIty9gRLe8ku5XbJC/3hqtO7kM7Btr8CjVFbuPSqPxRbSMNmDVnLqDgkoQSVy3gYthka+93zuXiwYU0OPb6LXFIhSnvGjZxU+cMznguTR9RvKazdwiUB7hxxDoRtWGA/BSo0/A1Pez+VWrsq32upfFBMDOLPu3ePhQ/upaUA2i7008j0RKCA2jjAqSDmhb+lQOIQeY20mvRgkqglkdmLBWK42yhe1dyWLFcKViu8MgIUYN7AXVOkT5rKG88t64cnwTBc1nGdwWNyTkcvDvuAoSjp6BFFH4iOpINnxQhlxwGgAAaGBCJEWZdIHai1GEzG28ow065SudisHPnRI341FPvMcysW9GIUi6pnBCQe9upYWhi2a8Z/UFWQn/hfYjwGRbGaBITGDqMf71ejBTGciAD3s9yNJqASM0PQ2HgKJCmPbPxt6PXnhp8U1si0xeNL5gepq9EHDIytWed+bqE76BQo/iFUIAUDTBMvMqPrL6Y5onykkMdIiPg9TIiqvLoo90mahDN3bTYHf1s4RTlcTKLfMVfTssxKWhjrCV8vF9nOCacssdQs3ii2RREku5oJNVwqyi68neasbcCXRgnk/ajDc0WFKaGL/2BFXOvmRf/RLGXIqfNzqJcsmoiEahRDi195xm4eDjSKEzyZHqTAw+RiVzmDJd/CRDjMgDCocD01xZDnayG486/MCX6J3pxb3/INnA1JGkTsXyr4CwueJ/gPRPufODuo2TkpP09lPaqVFAXyQBgrmnvhZr9aYK7tpC1NwuVh96mPpJd20HOohqA/DnEnEm1tyenYYfb0mSrydGqrMZW2VXj7Q8xyw1t5UYGLUKbFqlMfeUtM94iRm0kQQChMKKkyyzPbmqaMRYarsuPI9ITsRKw3gwRpfMtTbqEL7JC8Yg1zffQ2AGduQDmz4AQH5brKpiH3gcI/2EyemVTW1RyGCqiDiGEWarOpsrKKxlZBW5tGZWQAoyfnh5mosuwExxxZg7o+ltfiuh1gAV/JjTY0fPPAYD9PiDCCGsPlIblkobfXxb2UdrVhTvvAVHfWj7AD7/GmJz2Op/vqBD58Pi223RZEN4QQsxv6qVuyTqwqNi34pTXXbOO2BCCWn9GfV0KZTPMe3/cLQ8ldLffrP8G9Olxl5B3RlmaGSwppEK6eBDuWUIYI1yMkvuzz9vQDxXX63oAO8bLv8aerZJtBJH5Kcg6NYzdKokM+DOEEFsb5kRXMpHxj+D3nZboqbK3HJ/WtCyw1Pj+SUE32BwugPRqG9iI0Fs7KGQd/pOrrnxv4cPhxE2zP1+xMWXbm4fdVDgdf4qdRhbKvr9RJKsi9VdX4VRjudpjIf73TOm5v1fyX55hmObKYN/KTyg46JO8lq7d+94FbG+KbgKgpO3tgELGxDRxUeF0MRCEEmsX39ha/joe0rPe5Fj6Lx3adEhC4eYcoi7XeXOD+MMupWnEZt4RXxAz1j0Mjf93KwIDlSOHlEiIYrGNerh7r5BjAWkEUXGBFmF7Byp+1uaNDjaEtbWKrBzfH5LcUYHXRw8B7olsNbWsnlyGwMnV304Ts7JdhYSPA+0jcuY4Jdw73EP7EbUliyr44hAIRMpqHMGV2PjfR8dRR78CEhbONEXLfq+88B+oooQiLcLXZoCaqKjx4LyAn7MUI/IJjY7aiCR7JjWqlt3ED6a8effoXuXm8eFbY8T5h0pOg8x0/PaFghfolUKUM8KZgL6/Qq1IIrwgAAAA=" alt="MYYAX - Conecta, Monitorea, Crece"></div>';
+
+  html += '<div class="saludo-card">' +
+    '<h2>¡Hola, piscicultor! 👋</h2>' +
+    '<p>' + (alertasActivas > 0
+      ? '⚠️ Tienes ' + alertasActivas + ' alerta' + (alertasActivas>1?'s':'') + ' sin resolver'
+      : '✅ Todo en orden por ahora') + '</p>' +
+  '</div>';html += '<div class="stats-row">' +
+    '<div class="stat-mini"><div class="sm-val">' + (alimentadoHoy ? '✅' : '⏳') + '</div><div class="sm-lbl">Alimentado hoy</div></div>' +
+    '<div class="stat-mini"><div class="sm-val">' + (ultimoAgua ? ultimoAgua.temperatura+'°' : '—') + '</div><div class="sm-lbl">Temp. agua</div></div>' +
+    '<div class="stat-mini"><div class="sm-val">' + mortalidadHoy + '</div><div class="sm-lbl">Mortalidad hoy</div></div>' +
+  '</div>';
+
+  var items = [
+    { v:'inicio',       ic:'🏠', cls:'ic-inicio',   label:'Inicio' },
+    { v:'alimentacion', ic:'🍽️', cls:'ic-aliment',  label:'Alimentación' },
+    { v:'agua',         ic:'💧', cls:'ic-agua',     label:'Calidad de agua' },
+    { v:'crecimiento',  ic:'📈', cls:'ic-crecim',   label:'Crecimiento' },
+    { v:'alertas',      ic:'🔔', cls:'ic-alertas',  label:'Alertas', badge: alertasActivas },
+    { v:'salud',        ic:'🩺', cls:'ic-salud',    label:'Salud de las truchas' },
+    { v:'reportes',     ic:'📊', cls:'ic-reportes', label:'Reportes' },
+    { v:'asistencia',   ic:'📋', cls:'ic-asistenc', label:'Asistencia prácticas' },
+    { v:'contacto',     ic:'📞', cls:'ic-contacto', label:'Contacto' },
+    { v:'clima',        ic:'⛅', cls:'ic-clima',    label:'Clima' }
+  ];
+
+  html += '<div class="seccion-titulo">Menú principal</div>';
+  html += '<div class="menu-grid">';
+  items.forEach(function(it){
+    html += '<div class="menu-item" data-go="' + it.v + '">' +
+      (it.badge ? '<span class="mi-badge activo">' + it.badge + '</span>' : '') +
+      '<div class="mi-icono ' + it.cls + '">' + it.ic + '</div>' +
+      '<div class="mi-label">' + it.label + '</div>' +
+    '</div>';
+  });
+  html += '</div>';
+
+  html += '<div class="credito-final">MYYAX · Conecta · Monitorea · Crece<br>Datos guardados en este dispositivo · ' + TAPP.version + '</div>';
+
+  cont.innerHTML = html;
+
+  cont.querySelectorAll('[data-go]').forEach(function(el){
+    el.addEventListener('click', function(){ TAPP.ir(el.dataset.go); });
+  });
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: ALIMENTACIÓN
+// ════════════════════════════════════════════════════════════════════════
+function renderAlimentacion(cont){
+  var registros = TAPP.leer('alimentaciones', []);
+
+  function totalHoy(){
+    var hoy = TAPP.fechaHoy();
+    return registros.filter(function(r){ return r.fecha === hoy; })
+                     .reduce(function(a,r){ return a + parseFloat(r.cantidad||0); }, 0);
+  }
+
+  var html = '';
+
+  html += '<div class="stats-row">' +
+    '<div class="stat-mini"><div class="sm-val">' + totalHoy().toFixed(1) + '</div><div class="sm-lbl">Kg hoy</div></div>' +
+    '<div class="stat-mini"><div class="sm-val">' + registros.length + '</div><div class="sm-lbl">Registros</div></div>' +
+  '</div>';
+
+  html += '<button class="btn-compartir" id="af-compartir"><span class="ico">📤</span> Compartir reporte de alimentación</button>';
+
+  html += '<div class="card">' +
+    '<div class="seccion-titulo" style="margin-top:0">Nuevo registro</div>' +
+    '<div class="form-group">' +
+      '<label>Fecha</label>' +
+      '<input type="date" id="af-fecha" value="' + TAPP.fechaHoy() + '">' +
+    '</div>' +
+    '<div class="row-2">' +
+      '<div class="form-group">' +
+        '<label>Hora</label>' +
+        '<select id="af-momento">' +
+          '<option value="Mañana">🌅 Mañana</option>' +
+          '<option value="Mediodía">☀️ Mediodía</option>' +
+          '<option value="Tarde">🌇 Tarde</option>' +
+        '</select>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label>Cantidad</label>' +
+        '<div class="input-unidad-wrap">' +
+          '<input type="number" step="0.1" min="0" id="af-cantidad" placeholder="0.0">' +
+          '<span class="input-unidad">kg</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Tipo de alimento</label>' +
+      '<select id="af-tipo">' +
+        '<option>Balanceado iniciador</option>' +
+        '<option>Balanceado crecimiento</option>' +
+        '<option>Balanceado engorde</option>' +
+        '<option>Alimento natural</option>' +
+        '<option>Otro</option>' +
+      '</select>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Observaciones (opcional)</label>' +
+      '<textarea id="af-obs" placeholder="Ej: las truchas comieron con apetito normal..."></textarea>' +
+    '</div>' +
+    '<button class="btn-primario" id="af-guardar">💾 Guardar registro</button>' +
+  '</div>';
+
+  html += '<div class="seccion-titulo">Historial</div>';
+  html += '<div id="af-lista"></div>';
+
+  cont.innerHTML = html;
+
+  function renderLista(){
+    var lista = document.getElementById('af-lista');
+    if (registros.length === 0) {
+      lista.innerHTML = '<div class="vacio-msg"><div class="vm-icono">🍽️</div><p>Aún no hay registros de alimentación</p></div>';
+      return;
+    }
+    var ordenados = registros.slice().sort(function(a,b){ return b.creado - a.creado; });
+    lista.innerHTML = ordenados.map(function(r){
+      return '<div class="registro-item">' +
+        '<div class="ri-icono" style="background:#FCE9D6;color:#C8762B;">🍽️</div>' +
+        '<div class="ri-info">' +
+          '<div class="ri-titulo">' + r.cantidad + ' kg · ' + r.tipo + '</div>' +
+          '<div class="ri-detalle">' + r.momento + (r.obs ? ' · ' + r.obs : '') + '</div>' +
+        '</div>' +
+        '<div class="ri-fecha">' + TAPP.formatoFechaCorta(r.fecha) + '</div>' +
+        '<button class="ri-borrar" data-del="' + r.id + '">✕</button>' +
+      '</div>';
+    }).join('');
+
+    lista.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        TAPP.confirmar('¿Eliminar este registro?', function(){
+          registros = registros.filter(function(r){ return r.id !== btn.dataset.del; });
+          TAPP.guardar('alimentaciones', registros);
+          TAPP.toast('Registro eliminado', 'bad');
+          renderAlimentacion(cont);
+        });
+      });
+    });
+  }
+
+  document.getElementById('af-compartir').addEventListener('click', function(){
+    var hoy = TAPP.fechaHoy();
+    var deHoy = registros.filter(function(r){ return r.fecha === hoy; });
+    var totalKgHoy = totalHoy().toFixed(1);
+
+    var textoLineas = ['🍽️ *Reporte de Alimentación — MYYAX*', ''];
+    textoLineas.push('📅 ' + TAPP.formatoFechaCorta(hoy));
+    textoLineas.push('Total suministrado hoy: ' + totalKgHoy + ' kg');
+    textoLineas.push('');
+    if (deHoy.length > 0) {
+      textoLineas.push('Detalle de hoy:');
+      deHoy.forEach(function(r){
+        textoLineas.push('• ' + r.momento + ': ' + r.cantidad + ' kg de ' + r.tipo);
+      });
+    } else {
+      textoLineas.push('(Sin registros de alimentación hoy todavía)');
+    }
+    textoLineas.push('');
+    textoLineas.push('Total histórico de registros: ' + registros.length);
+
+    var filasImagen = [
+      { label:'Total hoy', valor: totalKgHoy + ' kg' },
+      { label:'Registros hoy', valor: deHoy.length },
+      { label:'Registros totales', valor: registros.length }
+    ];
+    if (deHoy.length > 0) {
+      filasImagen.push({ label:'Último momento', valor: deHoy[deHoy.length-1].momento });
+      filasImagen.push({ label:'Tipo de alimento', valor: deHoy[deHoy.length-1].tipo });
+    }
+
+    TAPP.compartirMenu(
+      { titulo: 'Reporte de Alimentación', texto: textoLineas.join('\n') },
+      { titulo:'Alimentación', subtitulo: TAPP.formatoFechaCorta(hoy), icono:'🍽️',
+        color:'#E8A23D', colorOscuro:'#B5791E', filas: filasImagen, archivoNombre:'alimentacion' }
+    );
+  });
+
+  document.getElementById('af-guardar').addEventListener('click', function(){
+    var cantidad = parseFloat(document.getElementById('af-cantidad').value);
+    if (!cantidad || cantidad <= 0) {
+      TAPP.toast('Ingresa una cantidad válida', 'bad');
+      return;
+    }
+    var nuevo = {
+      id: TAPP.idUnico(),
+      fecha: document.getElementById('af-fecha').value || TAPP.fechaHoy(),
+      momento: document.getElementById('af-momento').value,
+      cantidad: cantidad,
+      tipo: document.getElementById('af-tipo').value,
+      obs: document.getElementById('af-obs').value.trim(),
+      creado: Date.now()
+    };
+    registros.push(nuevo);
+    TAPP.guardar('alimentaciones', registros);
+    TAPP.toast('✅ Alimentación registrada');
+    renderAlimentacion(cont);
+  });
+
+  renderLista();
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: CALIDAD DE AGUA
+// ════════════════════════════════════════════════════════════════════════
+function renderAgua(cont){
+  var registros = TAPP.leer('registrosAgua', []);
+  var R = TAPP.RANGOS;
+
+  function posicionMedidor(tipo, valor){
+    var r = R[tipo];
+    var rango = r.criticoMax - r.criticoMin;
+    var pos = ((valor - r.criticoMin) / rango) * 100;
+    return Math.max(2, Math.min(98, pos));
+  }
+
+  var html = '';
+
+  html += '<div class="info-box">💧 <strong>Rangos óptimos para trucha:</strong> Temperatura 13–18°C · pH 6.5–8.5 · Oxígeno disuelto 7.5–12 mg/L. Valores fuera de estos rangos generan alertas automáticas.</div>';
+
+  if (registros.length > 0) {
+    html += '<button class="btn-compartir" id="ag-compartir"><span class="ico">📤</span> Compartir última medición</button>';
+  }
+
+  html += '<div class="card">' +
+    '<div class="seccion-titulo" style="margin-top:0">Nueva medición</div>' +
+    '<div class="form-group">' +
+      '<label>Fecha</label>' +
+      '<input type="date" id="ag-fecha" value="' + TAPP.fechaHoy() + '">' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Estanque / Jaula</label>' +
+      '<input type="text" id="ag-estanque" placeholder="Ej: Estanque 1">' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Temperatura del agua</label>' +
+      '<div class="input-unidad-wrap"><input type="number" step="0.1" id="ag-temp" placeholder="15.0"><span class="input-unidad">°C</span></div>' +
+      '<div class="hint">Óptimo: 13 – 18 °C</div>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>pH</label>' +
+      '<div class="input-unidad-wrap"><input type="number" step="0.1" id="ag-ph" placeholder="7.5"><span class="input-unidad">pH</span></div>' +
+      '<div class="hint">Óptimo: 6.5 – 8.5</div>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Oxígeno disuelto</label>' +
+      '<div class="input-unidad-wrap"><input type="number" step="0.1" id="ag-oxigeno" placeholder="9.0"><span class="input-unidad">mg/L</span></div>' +
+      '<div class="hint">Óptimo: 7.5 – 12 mg/L</div>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Turbidez (opcional)</label>' +
+      '<select id="ag-turbidez">' +
+        '<option value="">No registrada</option>' +
+        '<option value="Clara">Clara / transparente</option>' +
+        '<option value="Ligeramente turbia">Ligeramente turbia</option>' +
+        '<option value="Turbia">Turbia</option>' +
+        '<option value="Muy turbia">Muy turbia</option>' +
+      '</select>' +
+    '</div>' +
+    '<button class="btn-primario" id="ag-guardar">💾 Guardar medición</button>' +
+  '</div>';
+
+  html += '<div class="seccion-titulo">Última medición</div>';
+  html += '<div id="ag-ultima"></div>';
+
+  html += '<div class="seccion-titulo">Historial</div>';
+  html += '<div id="ag-lista"></div>';
+
+  cont.innerHTML = html;
+
+  function badgeHTML(estado){
+    if (estado === 'ok')   return '<span class="badge badge-ok">✓ Óptimo</span>';
+    if (estado === 'warn') return '<span class="badge badge-warn">⚠ Alerta</span>';
+    if (estado === 'bad')  return '<span class="badge badge-bad">✕ Crítico</span>';
+    return '';
+  }
+
+  function medidorHTML(tipo, valor, etiqueta){
+    var r = R[tipo];
+    var pos = posicionMedidor(tipo, valor);
+    return '<div class="medidor">' +
+      '<div class="medidor-barra"><div class="medidor-punto" style="left:'+pos+'%"></div></div>' +
+      '<div class="medidor-labels"><span>' + r.criticoMin + r.unidad + '</span><span>Óptimo: ' + r.min + '-' + r.max + r.unidad + '</span><span>' + r.criticoMax + r.unidad + '</span></div>' +
+    '</div>';
+  }
+
+  function renderUltima(){
+    var elUltima = document.getElementById('ag-ultima');
+    if (registros.length === 0) {
+      elUltima.innerHTML = '<div class="vacio-msg"><div class="vm-icono">💧</div><p>Aún no hay mediciones registradas</p></div>';
+      return;
+    }
+    var u = registros.slice().sort(function(a,b){ return b.creado - a.creado; })[0];
+    var estTemp = TAPP.evaluarParametro('temperatura', u.temperatura);
+    var estPh = TAPP.evaluarParametro('ph', u.ph);
+    var estOxi = TAPP.evaluarParametro('oxigeno', u.oxigeno);
+
+    elUltima.innerHTML = '<div class="card">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
+        '<strong style="color:var(--azul-prof);font-size:13px;">' + (u.estanque || 'Sin nombre') + ' · ' + TAPP.formatoFechaCorta(u.fecha) + '</strong>' +
+      '</div>' +
+      '<div style="margin-bottom:14px;">' +
+        '<div style="display:flex;justify-content:space-between;"><span style="font-size:12.5px;font-weight:700;">🌡️ Temperatura: ' + u.temperatura + '°C</span>' + badgeHTML(estTemp) + '</div>' +
+        medidorHTML('temperatura', u.temperatura) +
+      '</div>' +
+      '<div style="margin-bottom:14px;">' +
+        '<div style="display:flex;justify-content:space-between;"><span style="font-size:12.5px;font-weight:700;">⚗️ pH: ' + u.ph + '</span>' + badgeHTML(estPh) + '</div>' +
+        medidorHTML('ph', u.ph) +
+      '</div>' +
+      '<div>' +
+        '<div style="display:flex;justify-content:space-between;"><span style="font-size:12.5px;font-weight:700;">🫧 Oxígeno: ' + u.oxigeno + ' mg/L</span>' + badgeHTML(estOxi) + '</div>' +
+        medidorHTML('oxigeno', u.oxigeno) +
+      '</div>' +
+      (u.turbidez ? '<div style="margin-top:12px;font-size:12px;color:var(--gris-claro);">Turbidez: <strong>' + u.turbidez + '</strong></div>' : '') +
+    '</div>';
+  }
+
+  function renderLista(){
+    var lista = document.getElementById('ag-lista');
+    if (registros.length === 0) {
+      lista.innerHTML = '';
+      return;
+    }
+    var ordenados = registros.slice().sort(function(a,b){ return b.creado - a.creado; });
+    lista.innerHTML = ordenados.map(function(r){
+      var estTemp = TAPP.evaluarParametro('temperatura', r.temperatura);
+      var estPh = TAPP.evaluarParametro('ph', r.ph);
+      var estOxi = TAPP.evaluarParametro('oxigeno', r.oxigeno);
+      var peor = [estTemp, estPh, estOxi].includes('bad') ? 'bad' : ([estTemp,estPh,estOxi].includes('warn') ? 'warn' : 'ok');
+      var colorFondo = peor === 'bad' ? '#FBE6E6' : (peor === 'warn' ? '#FDF1DF' : '#E3F6EA');
+      var colorTxt = peor === 'bad' ? 'var(--rojo)' : (peor === 'warn' ? 'var(--amber)' : 'var(--verde-ok)');
+      return '<div class="registro-item">' +
+        '<div class="ri-icono" style="background:'+colorFondo+';color:'+colorTxt+';">💧</div>' +
+        '<div class="ri-info">' +
+          '<div class="ri-titulo">' + r.temperatura + '°C · pH ' + r.ph + ' · O₂ ' + r.oxigeno + '</div>' +
+          '<div class="ri-detalle">' + (r.estanque || 'Sin nombre') + '</div>' +
+        '</div>' +
+        '<div class="ri-fecha">' + TAPP.formatoFechaCorta(r.fecha) + '</div>' +
+        '<button class="ri-borrar" data-del="' + r.id + '">✕</button>' +
+      '</div>';
+    }).join('');
+
+    lista.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        TAPP.confirmar('¿Eliminar esta medición?', function(){
+          registros = registros.filter(function(r){ return r.id !== btn.dataset.del; });
+          TAPP.guardar('registrosAgua', registros);
+          TAPP.toast('Medición eliminada', 'bad');
+          renderAgua(cont);
+        });
+      });
+    });
+  }
+
+  // Generar alertas automáticas si algún parámetro está fuera de rango
+  function generarAlertasSiCorresponde(registro){
+    var alertas = TAPP.leer('alertas', []);
+    var nuevasAlertas = [];
+
+    var checks = [
+      { tipo:'temperatura', valor:registro.temperatura, nombre:'Temperatura', unidad:'°C' },
+      { tipo:'ph',          valor:registro.ph,          nombre:'pH',          unidad:'' },
+      { tipo:'oxigeno',     valor:registro.oxigeno,     nombre:'Oxígeno disuelto', unidad:'mg/L' }
+    ];
+
+    checks.forEach(function(c){
+      var estado = TAPP.evaluarParametro(c.tipo, c.valor);
+      if (estado === 'bad' || estado === 'warn') {
+        nuevasAlertas.push({
+          id: TAPP.idUnico(),
+          tipo: estado === 'bad' ? 'bad' : 'warn',
+          titulo: (estado === 'bad' ? '🚨 Nivel crítico: ' : '⚠️ Fuera de rango: ') + c.nombre,
+          detalle: c.nombre + ' registrado en ' + (registro.estanque || 'estanque') + ': ' + c.valor + ' ' + c.unidad + '. ' +
+                   (estado === 'bad' ? 'Requiere atención inmediata.' : 'Revisar y monitorear de cerca.'),
+          origen: 'agua',
+          fecha: registro.fecha,
+          creado: Date.now(),
+          resuelta: false
+        });
+      }
+    });
+
+    if (nuevasAlertas.length > 0) {
+      alertas = alertas.concat(nuevasAlertas);
+      TAPP.guardar('alertas', alertas);
+    }
+    return nuevasAlertas.length;
+  }
+
+  document.getElementById('ag-guardar').addEventListener('click', function(){
+    var temp = parseFloat(document.getElementById('ag-temp').value);
+    var ph = parseFloat(document.getElementById('ag-ph').value);
+    var oxi = parseFloat(document.getElementById('ag-oxigeno').value);
+
+    if (isNaN(temp) || isNaN(ph) || isNaN(oxi)) {
+      TAPP.toast('Completa temperatura, pH y oxígeno', 'bad');
+      return;
+    }
+
+    var nuevo = {
+      id: TAPP.idUnico(),
+      fecha: document.getElementById('ag-fecha').value || TAPP.fechaHoy(),
+      estanque: document.getElementById('ag-estanque').value.trim(),
+      temperatura: temp,
+      ph: ph,
+      oxigeno: oxi,
+      turbidez: document.getElementById('ag-turbidez').value,
+      creado: Date.now()
+    };
+    registros.push(nuevo);
+    TAPP.guardar('registrosAgua', registros);
+
+    var nAlertas = generarAlertasSiCorresponde(nuevo);
+    if (nAlertas > 0) {
+      TAPP.toast('⚠️ Medición guardada con ' + nAlertas + ' alerta(s)', 'bad');
+    } else {
+      TAPP.toast('✅ Medición guardada — todo en rango óptimo');
+    }
+    renderAgua(cont);
+  });
+
+  renderUltima();
+  renderLista();
+
+  if (document.getElementById('ag-compartir')) {
+    document.getElementById('ag-compartir').addEventListener('click', function(){
+      var u = registros.slice().sort(function(a,b){ return b.creado-a.creado; })[0];
+      var estTemp = TAPP.evaluarParametro('temperatura', u.temperatura);
+      var estPh = TAPP.evaluarParametro('ph', u.ph);
+      var estOxi = TAPP.evaluarParametro('oxigeno', u.oxigeno);
+
+      function emojiEstado(e){ return e==='ok' ? '✅' : (e==='warn' ? '⚠️' : '🚨'); }
+
+      var texto = [
+        '💧 *Reporte de Calidad de Agua — MYYAX*', '',
+        '📍 ' + (u.estanque || 'Estanque sin nombre'),
+        '📅 ' + TAPP.formatoFechaCorta(u.fecha), '',
+        emojiEstado(estTemp) + ' Temperatura: ' + u.temperatura + '°C  (óptimo 13–18°C)',
+        emojiEstado(estPh) + ' pH: ' + u.ph + '  (óptimo 6.5–8.5)',
+        emojiEstado(estOxi) + ' Oxígeno disuelto: ' + u.oxigeno + ' mg/L  (óptimo 7.5–12 mg/L)'
+      ];
+      if (u.turbidez) texto.push('🔍 Turbidez: ' + u.turbidez);
+
+      var peorEstado = [estTemp,estPh,estOxi].includes('bad') ? 'bad' : ([estTemp,estPh,estOxi].includes('warn') ? 'warn' : 'ok');
+      var colorImg = peorEstado === 'bad' ? '#D14B4B' : (peorEstado === 'warn' ? '#E8A23D' : '#2E9C5C');
+      var colorImgOsc = peorEstado === 'bad' ? '#A83333' : (peorEstado === 'warn' ? '#B5791E' : '#1E6B3F');
+
+      TAPP.compartirMenu(
+        { titulo:'Reporte de Calidad de Agua', texto: texto.join('\n') },
+        { titulo:'Calidad de Agua', subtitulo:(u.estanque||'')+' · '+TAPP.formatoFechaCorta(u.fecha), icono:'💧',
+          color: colorImg, colorOscuro: colorImgOsc,
+          filas: [
+            { label:'Temperatura', valor: u.temperatura + '°C' },
+            { label:'pH', valor: u.ph },
+            { label:'Oxígeno disuelto', valor: u.oxigeno + ' mg/L' },
+            { label:'Estado general', valor: peorEstado==='ok'?'Óptimo ✓':(peorEstado==='warn'?'Alerta':'Crítico') }
+          ],
+          archivoNombre:'calidad_agua' }
+      );
+    });
+  }
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: CRECIMIENTO
+// ════════════════════════════════════════════════════════════════════════
+function renderCrecimiento(cont){
+  var registros = TAPP.leer('crecimientos', []);
+
+  var html = '';
+
+  function pesoPromedioUltimo(){
+    if (registros.length === 0) return '—';
+    var u = registros.slice().sort(function(a,b){ return b.creado-a.creado; })[0];
+    return u.pesoPromedio + ' g';
+  }
+  function gananciaPeso(){
+    var ord = registros.slice().sort(function(a,b){ return a.creado-b.creado; });
+    if (ord.length < 2) return '—';
+    var dif = ord[ord.length-1].pesoPromedio - ord[ord.length-2].pesoPromedio;
+    return (dif >= 0 ? '+' : '') + dif.toFixed(1) + ' g';
+  }
+
+  html += '<div class="stats-row">' +
+    '<div class="stat-mini"><div class="sm-val">' + pesoPromedioUltimo() + '</div><div class="sm-lbl">Peso promedio</div></div>' +
+    '<div class="stat-mini"><div class="sm-val">' + gananciaPeso() + '</div><div class="sm-lbl">Ganancia última</div></div>' +
+    '<div class="stat-mini"><div class="sm-val">' + registros.length + '</div><div class="sm-lbl">Muestreos</div></div>' +
+  '</div>';
+
+  if (registros.length > 0) {
+    html += '<button class="btn-compartir" id="cr-compartir"><span class="ico">📤</span> Compartir último muestreo</button>';
+  }
+
+  html += '<div class="card">' +
+    '<div class="seccion-titulo" style="margin-top:0">Nuevo muestreo</div>' +
+    '<div class="form-group">' +
+      '<label>Fecha</label>' +
+      '<input type="date" id="cr-fecha" value="' + TAPP.fechaHoy() + '">' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Estanque / Jaula</label>' +
+      '<input type="text" id="cr-estanque" placeholder="Ej: Estanque 1">' +
+    '</div>' +
+    '<div class="row-2">' +
+      '<div class="form-group">' +
+        '<label>N° de peces muestreados</label>' +
+        '<input type="number" min="1" id="cr-npeces" placeholder="20">' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label>Peso total muestra</label>' +
+        '<div class="input-unidad-wrap"><input type="number" step="0.1" id="cr-pesototal" placeholder="0.0"><span class="input-unidad">g</span></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="row-2">' +
+      '<div class="form-group">' +
+        '<label>Longitud promedio (opcional)</label>' +
+        '<div class="input-unidad-wrap"><input type="number" step="0.1" id="cr-longitud" placeholder="0.0"><span class="input-unidad">cm</span></div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label>Población total estimada</label>' +
+        '<input type="number" min="0" id="cr-poblacion" placeholder="500">' +
+      '</div>' +
+    '</div>' +
+    '<button class="btn-primario" id="cr-guardar">💾 Guardar muestreo</button>' +
+  '</div>';
+
+  html += '<div class="seccion-titulo">Historial de muestreos</div>';
+  html += '<div id="cr-lista"></div>';
+
+  cont.innerHTML = html;
+
+  function renderLista(){
+    var lista = document.getElementById('cr-lista');
+    if (registros.length === 0) {
+      lista.innerHTML = '<div class="vacio-msg"><div class="vm-icono">📈</div><p>Aún no hay muestreos de crecimiento</p></div>';
+      return;
+    }
+    var ordenados = registros.slice().sort(function(a,b){ return b.creado - a.creado; });
+    lista.innerHTML = ordenados.map(function(r){
+      return '<div class="registro-item">' +
+        '<div class="ri-icono" style="background:#DFF3E2;color:#2E9C5C;">📈</div>' +
+        '<div class="ri-info">' +
+          '<div class="ri-titulo">Peso prom. ' + r.pesoPromedio + ' g · ' + r.npeces + ' peces</div>' +
+          '<div class="ri-detalle">' + (r.estanque || 'Sin nombre') + (r.longitud ? ' · ' + r.longitud + ' cm' : '') + (r.poblacion ? ' · Población: ' + r.poblacion : '') + '</div>' +
+        '</div>' +
+        '<div class="ri-fecha">' + TAPP.formatoFechaCorta(r.fecha) + '</div>' +
+        '<button class="ri-borrar" data-del="' + r.id + '">✕</button>' +
+      '</div>';
+    }).join('');
+
+    lista.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        TAPP.confirmar('¿Eliminar este muestreo?', function(){
+          registros = registros.filter(function(r){ return r.id !== btn.dataset.del; });
+          TAPP.guardar('crecimientos', registros);
+          TAPP.toast('Muestreo eliminado', 'bad');
+          renderCrecimiento(cont);
+        });
+      });
+    });
+  }
+
+  document.getElementById('cr-guardar').addEventListener('click', function(){
+    var npeces = parseInt(document.getElementById('cr-npeces').value);
+    var pesoTotal = parseFloat(document.getElementById('cr-pesototal').value);
+
+    if (!npeces || npeces <= 0 || !pesoTotal || pesoTotal <= 0) {
+      TAPP.toast('Ingresa N° de peces y peso total válidos', 'bad');
+      return;
+    }
+
+    var pesoPromedio = pesoTotal / npeces;
+
+    var nuevo = {
+      id: TAPP.idUnico(),
+      fecha: document.getElementById('cr-fecha').value || TAPP.fechaHoy(),
+      estanque: document.getElementById('cr-estanque').value.trim(),
+      npeces: npeces,
+      pesoTotal: pesoTotal,
+      pesoPromedio: Math.round(pesoPromedio * 10) / 10,
+      longitud: parseFloat(document.getElementById('cr-longitud').value) || null,
+      poblacion: parseInt(document.getElementById('cr-poblacion').value) || null,
+      creado: Date.now()
+    };
+    registros.push(nuevo);
+    TAPP.guardar('crecimientos', registros);
+    TAPP.toast('✅ Muestreo guardado — peso prom. ' + nuevo.pesoPromedio + ' g');
+    renderCrecimiento(cont);
+  });
+
+  renderLista();
+
+  if (document.getElementById('cr-compartir')) {
+    document.getElementById('cr-compartir').addEventListener('click', function(){
+      var u = registros.slice().sort(function(a,b){ return b.creado-a.creado; })[0];
+      var texto = [
+        '📈 *Reporte de Crecimiento — MYYAX*', '',
+        '📍 ' + (u.estanque || 'Estanque sin nombre'),
+        '📅 ' + TAPP.formatoFechaCorta(u.fecha), '',
+        '⚖️ Peso promedio: ' + u.pesoPromedio + ' g',
+        '🐟 Peces muestreados: ' + u.npeces
+      ];
+      if (u.longitud) texto.push('📏 Longitud promedio: ' + u.longitud + ' cm');
+      if (u.poblacion) texto.push('🔢 Población estimada: ' + u.poblacion + ' peces');
+      texto.push('');
+      texto.push('Ganancia respecto a la medición anterior: ' + gananciaPeso());
+
+      var filasImg = [
+        { label:'Peso promedio', valor: u.pesoPromedio + ' g' },
+        { label:'Peces muestreados', valor: u.npeces },
+      ];
+      if (u.longitud) filasImg.push({ label:'Longitud prom.', valor: u.longitud + ' cm' });
+      if (u.poblacion) filasImg.push({ label:'Población estimada', valor: u.poblacion });
+      filasImg.push({ label:'Ganancia vs. anterior', valor: gananciaPeso() });
+
+      TAPP.compartirMenu(
+        { titulo:'Reporte de Crecimiento', texto: texto.join('\n') },
+        { titulo:'Crecimiento', subtitulo:(u.estanque||'')+' · '+TAPP.formatoFechaCorta(u.fecha), icono:'📈',
+          color:'#3FAE6B', colorOscuro:'#1E6B3F', filas: filasImg, archivoNombre:'crecimiento' }
+      );
+    });
+  }
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: ALERTAS
+// ════════════════════════════════════════════════════════════════════════
+function renderAlertas(cont){
+  var alertas = TAPP.leer('alertas', []);
+  var filtroActual = 'activas'; // activas | resueltas | todas
+
+  var html = '';
+
+  var activas = alertas.filter(function(a){ return !a.resuelta; });
+  var resueltas = alertas.filter(function(a){ return a.resuelta; });
+
+  html += '<div class="stats-row">' +
+    '<div class="stat-mini"><div class="sm-val" style="color:var(--rojo)">' + activas.filter(function(a){return a.tipo==='bad';}).length + '</div><div class="sm-lbl">Críticas</div></div>' +
+    '<div class="stat-mini"><div class="sm-val" style="color:var(--amber)">' + activas.filter(function(a){return a.tipo==='warn';}).length + '</div><div class="sm-lbl">Advertencias</div></div>' +
+    '<div class="stat-mini"><div class="sm-val" style="color:var(--verde-ok)">' + resueltas.length + '</div><div class="sm-lbl">Resueltas</div></div>' +
+  '</div>';
+
+  html += '<div class="card" style="padding:14px;">' +
+    '<div class="seccion-titulo" style="margin-top:0">Crear alerta manual</div>' +
+    '<div class="form-group">' +
+      '<label>Título</label>' +
+      '<input type="text" id="al-titulo" placeholder="Ej: Revisar válvula del estanque 2">' +
+    '</div>' +
+    '<div class="row-2">' +
+      '<div class="form-group">' +
+        '<label>Nivel</label>' +
+        '<select id="al-nivel">' +
+          '<option value="warn">⚠️ Advertencia</option>' +
+          '<option value="bad">🚨 Crítico</option>' +
+        '</select>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label>&nbsp;</label>' +
+        '<button class="btn-primario" id="al-crear" style="margin-top:0;">+ Agregar alerta</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+  html += '<div class="tabs-row" id="al-tabs">' +
+    '<button class="tab-btn activo" data-f="activas">Activas (' + activas.length + ')</button>' +
+    '<button class="tab-btn" data-f="resueltas">Resueltas (' + resueltas.length + ')</button>' +
+    '<button class="tab-btn" data-f="todas">Todas (' + alertas.length + ')</button>' +
+  '</div>';
+
+  if (activas.length > 0) {
+    html += '<button class="btn-compartir" id="al-compartir"><span class="ico">📤</span> Compartir alertas activas</button>';
+  }
+
+  html += '<div id="al-lista"></div>';
+
+  cont.innerHTML = html;
+
+  function iconoOrigen(origen){
+    if (origen === 'agua') return '💧';
+    if (origen === 'salud') return '🩺';
+    return '📌';
+  }
+
+  function renderLista(){
+    var lista = document.getElementById('al-lista');
+    var datos = alertas;
+    if (filtroActual === 'activas') datos = alertas.filter(function(a){ return !a.resuelta; });
+    if (filtroActual === 'resueltas') datos = alertas.filter(function(a){ return a.resuelta; });
+
+    if (datos.length === 0) {
+      var msg = filtroActual === 'activas' ? '✅ No hay alertas activas. ¡Todo en orden!' : 'No hay alertas en esta categoría';
+      lista.innerHTML = '<div class="vacio-msg"><div class="vm-icono">🔔</div><p>' + msg + '</p></div>';
+      return;
+    }
+
+    var ordenadas = datos.slice().sort(function(a,b){ return b.creado - a.creado; });
+    lista.innerHTML = ordenadas.map(function(a){
+      var claseTipo = a.resuelta ? 'ok' : a.tipo;
+      return '<div class="alerta-card ' + claseTipo + '">' +
+        '<div class="ac-ico">' + iconoOrigen(a.origen) + '</div>' +
+        '<div style="flex:1;">' +
+          '<div class="ac-titulo">' + a.titulo + (a.resuelta ? ' (resuelta)' : '') + '</div>' +
+          '<div class="ac-detalle">' + a.detalle + '</div>' +
+          '<div class="ac-fecha">' + TAPP.formatoFechaCorta(a.fecha) + '</div>' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:6px;">' +
+          (!a.resuelta ?
+            '<button data-resolver="' + a.id + '" style="background:var(--verde-ok);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;">✓</button>'
+            : '') +
+          '<button data-del="' + a.id + '" style="background:var(--rojo-bg);color:var(--rojo);border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;">✕</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    lista.querySelectorAll('[data-resolver]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        alertas = alertas.map(function(a){
+          if (a.id === btn.dataset.resolver) a.resuelta = true;
+          return a;
+        });
+        TAPP.guardar('alertas', alertas);
+        TAPP.toast('✅ Alerta marcada como resuelta');
+        renderAlertas(cont);
+      });
+    });
+    lista.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        TAPP.confirmar('¿Eliminar esta alerta?', function(){
+          alertas = alertas.filter(function(a){ return a.id !== btn.dataset.del; });
+          TAPP.guardar('alertas', alertas);
+          TAPP.toast('Alerta eliminada', 'bad');
+          renderAlertas(cont);
+        });
+      });
+    });
+  }
+
+  document.getElementById('al-tabs').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-f]');
+    if (!btn) return;
+    filtroActual = btn.dataset.f;
+    cont.querySelectorAll('#al-tabs .tab-btn').forEach(function(b){ b.classList.toggle('activo', b===btn); });
+    renderLista();
+  });
+
+  document.getElementById('al-crear').addEventListener('click', function(){
+    var titulo = document.getElementById('al-titulo').value.trim();
+    if (!titulo) { TAPP.toast('Escribe un título para la alerta', 'bad'); return; }
+    var nivel = document.getElementById('al-nivel').value;
+    var nueva = {
+      id: TAPP.idUnico(),
+      tipo: nivel,
+      titulo: (nivel === 'bad' ? '🚨 ' : '⚠️ ') + titulo,
+      detalle: 'Alerta creada manualmente por el usuario.',
+      origen: 'manual',
+      fecha: TAPP.fechaHoy(),
+      creado: Date.now(),
+      resuelta: false
+    };
+    alertas.push(nueva);
+    TAPP.guardar('alertas', alertas);
+    TAPP.toast('Alerta agregada');
+    renderAlertas(cont);
+  });
+
+  renderLista();
+
+  if (document.getElementById('al-compartir')) {
+    document.getElementById('al-compartir').addEventListener('click', function(){
+      var texto = ['🔔 *Alertas Activas — MYYAX*', '', '📅 ' + TAPP.formatoFechaCorta(TAPP.fechaHoy()), ''];
+      activas.slice().sort(function(a,b){return b.creado-a.creado;}).forEach(function(a){
+        texto.push((a.tipo==='bad'?'🚨':'⚠️') + ' ' + a.titulo);
+        texto.push('   ' + a.detalle);
+        texto.push('');
+      });
+      texto.push('Total: ' + activas.length + ' alerta(s) sin resolver');
+
+      var criticas = activas.filter(function(a){return a.tipo==='bad';}).length;
+      var advertencias = activas.filter(function(a){return a.tipo==='warn';}).length;
+
+      TAPP.compartirMenu(
+        { titulo:'Alertas Activas', texto: texto.join('\n') },
+        { titulo:'Alertas Activas', subtitulo: TAPP.formatoFechaCorta(TAPP.fechaHoy()), icono:'🔔',
+          color:'#D14B4B', colorOscuro:'#A83333',
+          filas: [
+            { label:'Críticas', valor: criticas },
+            { label:'Advertencias', valor: advertencias },
+            { label:'Total activas', valor: activas.length }
+          ],
+          archivoNombre:'alertas' }
+      );
+    });
+  }
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: SALUD DE LAS TRUCHAS
+// ════════════════════════════════════════════════════════════════════════
+function renderSalud(cont){
+  var registros = TAPP.leer('saludRegistros', []);
+
+  var html = '';
+
+  function mortalidadTotal(){
+    return registros.reduce(function(a,r){ return a + (r.mortalidad||0); }, 0);
+  }
+  function mortalidadMes(){
+    var hoy = new Date();
+    return registros.filter(function(r){
+      var f = new Date(r.fecha + 'T00:00:00');
+      return f.getMonth() === hoy.getMonth() && f.getFullYear() === hoy.getFullYear();
+    }).reduce(function(a,r){ return a + (r.mortalidad||0); }, 0);
+  }
+
+  html += '<div class="stats-row">' +
+    '<div class="stat-mini"><div class="sm-val">' + mortalidadTotal() + '</div><div class="sm-lbl">Mortalidad total</div></div>' +
+    '<div class="stat-mini"><div class="sm-val">' + mortalidadMes() + '</div><div class="sm-lbl">Este mes</div></div>' +
+    '<div class="stat-mini"><div class="sm-val">' + registros.length + '</div><div class="sm-lbl">Inspecciones</div></div>' +
+  '</div>';
+
+  if (registros.length > 0) {
+    html += '<button class="btn-compartir" id="sa-compartir"><span class="ico">📤</span> Compartir última inspección</button>';
+  }
+
+  html += '<div class="card">' +
+    '<div class="seccion-titulo" style="margin-top:0">Nueva inspección sanitaria</div>' +
+    '<div class="form-group">' +
+      '<label>Fecha</label>' +
+      '<input type="date" id="sa-fecha" value="' + TAPP.fechaHoy() + '">' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Estanque / Jaula</label>' +
+      '<input type="text" id="sa-estanque" placeholder="Ej: Estanque 1">' +
+    '</div>' +
+    '<div class="row-2">' +
+      '<div class="form-group">' +
+        '<label>Mortalidad registrada</label>' +
+        '<div class="input-unidad-wrap"><input type="number" min="0" id="sa-mortalidad" placeholder="0"><span class="input-unidad">peces</span></div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label>Comportamiento</label>' +
+        '<select id="sa-comportamiento">' +
+          '<option value="Normal">Normal</option>' +
+          '<option value="Letárgico">Letárgico</option>' +
+          '<option value="Nado errático">Nado errático</option>' +
+          '<option value="Boqueo en superficie">Boqueo en superficie</option>' +
+        '</select>' +
+      '</div>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Síntomas observados</label>' +
+      '<select id="sa-sintomas">' +
+        '<option value="Ninguno">Ninguno</option>' +
+        '<option value="Manchas en la piel">Manchas en la piel</option>' +
+        '<option value="Hongos / algodón blanco">Hongos / algodón blanco</option>' +
+        '<option value="Branquias pálidas">Branquias pálidas</option>' +
+        '<option value="Heridas o lesiones">Heridas o lesiones</option>' +
+        '<option value="Distensión abdominal">Distensión abdominal</option>' +
+        '<option value="Pérdida de apetito">Pérdida de apetito</option>' +
+        '<option value="Otro">Otro</option>' +
+      '</select>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<label>Observaciones / Tratamiento aplicado</label>' +
+      '<textarea id="sa-obs" placeholder="Ej: se aplicó tratamiento con sal al 2%..."></textarea>' +
+    '</div>' +
+    '<button class="btn-primario" id="sa-guardar">💾 Guardar inspección</button>' +
+  '</div>';
+
+  html += '<div class="seccion-titulo">Historial sanitario</div>';
+  html += '<div id="sa-lista"></div>';
+
+  cont.innerHTML = html;
+
+  function renderLista(){
+    var lista = document.getElementById('sa-lista');
+    if (registros.length === 0) {
+      lista.innerHTML = '<div class="vacio-msg"><div class="vm-icono">🩺</div><p>Aún no hay inspecciones registradas</p></div>';
+      return;
+    }
+    var ordenados = registros.slice().sort(function(a,b){ return b.creado - a.creado; });
+    lista.innerHTML = ordenados.map(function(r){
+      var alerta = (r.mortalidad > 0 || r.sintomas !== 'Ninguno' || r.comportamiento !== 'Normal');
+      var bg = alerta ? '#FBE6E6' : '#EAE3F7';
+      var color = alerta ? 'var(--rojo)' : '#7D5BBE';
+      return '<div class="registro-item">' +
+        '<div class="ri-icono" style="background:'+bg+';color:'+color+';">🩺</div>' +
+        '<div class="ri-info">' +
+          '<div class="ri-titulo">' + (r.estanque || 'Sin nombre') + (r.mortalidad ? ' · ' + r.mortalidad + ' muertos' : '') + '</div>' +
+          '<div class="ri-detalle">' + r.comportamiento + (r.sintomas !== 'Ninguno' ? ' · ' + r.sintomas : '') + '</div>' +
+        '</div>' +
+        '<div class="ri-fecha">' + TAPP.formatoFechaCorta(r.fecha) + '</div>' +
+        '<button class="ri-borrar" data-del="' + r.id + '">✕</button>' +
+      '</div>';
+    }).join('');
+
+    lista.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        TAPP.confirmar('¿Eliminar este registro?', function(){
+          registros = registros.filter(function(r){ return r.id !== btn.dataset.del; });
+          TAPP.guardar('saludRegistros', registros);
+          TAPP.toast('Registro eliminado', 'bad');
+          renderSalud(cont);
+        });
+      });
+    });
+  }
+
+  function generarAlertaSiCorresponde(r){
+    var alertas = TAPP.leer('alertas', []);
+    var generadas = 0;
+
+    if (r.mortalidad > 0) {
+      alertas.push({
+        id: TAPP.idUnico(),
+        tipo: r.mortalidad >= 5 ? 'bad' : 'warn',
+        titulo: (r.mortalidad >= 5 ? '🚨 Mortalidad elevada' : '⚠️ Mortalidad registrada'),
+        detalle: r.mortalidad + ' pez(es) muerto(s) en ' + (r.estanque || 'estanque') + '. Revisar causa y calidad del agua.',
+        origen: 'salud', fecha: r.fecha, creado: Date.now(), resuelta: false
+      });
+      generadas++;
+    }
+    if (r.sintomas !== 'Ninguno') {
+      alertas.push({
+        id: TAPP.idUnico(),
+        tipo: 'warn',
+        titulo: '⚠️ Síntoma detectado: ' + r.sintomas,
+        detalle: 'Observado en ' + (r.estanque || 'estanque') + '. Comportamiento: ' + r.comportamiento + '.',
+        origen: 'salud', fecha: r.fecha, creado: Date.now(), resuelta: false
+      });
+      generadas++;
+    }
+    if (r.comportamiento !== 'Normal' && r.sintomas === 'Ninguno') {
+      alertas.push({
+        id: TAPP.idUnico(),
+        tipo: 'warn',
+        titulo: '⚠️ Comportamiento anormal: ' + r.comportamiento,
+        detalle: 'Observado en ' + (r.estanque || 'estanque') + '. Monitorear de cerca.',
+        origen: 'salud', fecha: r.fecha, creado: Date.now(), resuelta: false
+      });
+      generadas++;
+    }
+
+    if (generadas > 0) TAPP.guardar('alertas', alertas);
+    return generadas;
+  }
+
+  document.getElementById('sa-guardar').addEventListener('click', function(){
+    var nuevo = {
+      id: TAPP.idUnico(),
+      fecha: document.getElementById('sa-fecha').value || TAPP.fechaHoy(),
+      estanque: document.getElementById('sa-estanque').value.trim(),
+      mortalidad: parseInt(document.getElementById('sa-mortalidad').value) || 0,
+      comportamiento: document.getElementById('sa-comportamiento').value,
+      sintomas: document.getElementById('sa-sintomas').value,
+      obs: document.getElementById('sa-obs').value.trim(),
+      creado: Date.now()
+    };
+    registros.push(nuevo);
+    TAPP.guardar('saludRegistros', registros);
+
+    var nAlertas = generarAlertaSiCorresponde(nuevo);
+    if (nAlertas > 0) {
+      TAPP.toast('⚠️ Inspección guardada con ' + nAlertas + ' alerta(s) generada(s)', 'bad');
+    } else {
+      TAPP.toast('✅ Inspección guardada — sin novedades');
+    }
+    renderSalud(cont);
+  });
+
+  renderLista();
+
+  if (document.getElementById('sa-compartir')) {
+    document.getElementById('sa-compartir').addEventListener('click', function(){
+      var u = registros.slice().sort(function(a,b){ return b.creado-a.creado; })[0];
+      var texto = [
+        '🩺 *Reporte de Salud — MYYAX*', '',
+        '📍 ' + (u.estanque || 'Estanque sin nombre'),
+        '📅 ' + TAPP.formatoFechaCorta(u.fecha), '',
+        '💀 Mortalidad: ' + u.mortalidad + ' pez(es)',
+        '🐟 Comportamiento: ' + u.comportamiento,
+        '🔍 Síntomas: ' + u.sintomas
+      ];
+      if (u.obs) { texto.push(''); texto.push('Observaciones: ' + u.obs); }
+      texto.push('');
+      texto.push('Mortalidad acumulada total: ' + mortalidadTotal() + ' peces');
+
+      TAPP.compartirMenu(
+        { titulo:'Reporte de Salud', texto: texto.join('\n') },
+        { titulo:'Salud de las Truchas', subtitulo:(u.estanque||'')+' · '+TAPP.formatoFechaCorta(u.fecha), icono:'🩺',
+          color:'#8E6BD6', colorOscuro:'#5D3F9E',
+          filas: [
+            { label:'Mortalidad', valor: u.mortalidad + ' peces' },
+            { label:'Comportamiento', valor: u.comportamiento },
+            { label:'Síntomas', valor: u.sintomas },
+            { label:'Mortalidad acumulada', valor: mortalidadTotal() }
+          ],
+          archivoNombre:'salud_truchas' }
+      );
+    });
+  }
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: REPORTES
+// ════════════════════════════════════════════════════════════════════════
+function renderReportes(cont){
+  var tabActual = 'resumen';
+
+  var html = '';
+  html += '<div class="tabs-row" id="rp-tabs">' +
+    '<button class="tab-btn activo" data-t="resumen">Resumen</button>' +
+    '<button class="tab-btn" data-t="agua">Agua</button>' +
+    '<button class="tab-btn" data-t="aliment">Alimento</button>' +
+    '<button class="tab-btn" data-t="crecim">Crecim.</button>' +
+  '</div>';
+  html += '<div id="rp-contenido"></div>';
+
+  cont.innerHTML = html;
+
+  function renderResumen(){
+    var alimentaciones = TAPP.leer('alimentaciones', []);
+    var agua = TAPP.leer('registrosAgua', []);
+    var crecimientos = TAPP.leer('crecimientos', []);
+    var salud = TAPP.leer('saludRegistros', []);
+    var alertas = TAPP.leer('alertas', []);
+
+    var totalAlimento = alimentaciones.reduce(function(a,r){ return a+parseFloat(r.cantidad||0); }, 0);
+    var totalMortalidad = salud.reduce(function(a,r){ return a+(r.mortalidad||0); }, 0);
+    var alertasActivas = alertas.filter(function(a){ return !a.resuelta; }).length;
+
+    var ultPeso = crecimientos.length ? crecimientos.slice().sort(function(a,b){return b.creado-a.creado;})[0].pesoPromedio : null;
+
+    var html2 = '<div class="card">' +
+      '<div class="seccion-titulo" style="margin-top:0">Resumen general</div>' +
+      filaResumen('🍽️', 'Total de alimento suministrado', totalAlimento.toFixed(1) + ' kg') +
+      filaResumen('💧', 'Mediciones de agua registradas', agua.length) +
+      filaResumen('📈', 'Peso promedio más reciente', ultPeso ? ultPeso + ' g' : 'Sin datos') +
+      filaResumen('🩺', 'Mortalidad acumulada', totalMortalidad + ' peces') +
+      filaResumen('🔔', 'Alertas activas', alertasActivas) +
+    '</div>';
+
+    html2 += '<div class="info-box">📊 Este resumen se actualiza automáticamente con cada registro que guardes en las demás secciones de la app.</div>';
+
+    document.getElementById('rp-contenido').innerHTML = html2;
+  }
+
+  function filaResumen(ic, lbl, val){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--borde);">' +
+      '<span style="font-size:18px;">' + ic + '</span>' +
+      '<span style="flex:1;font-size:12.5px;font-weight:600;color:var(--gris-txt);">' + lbl + '</span>' +
+      '<span style="font-size:14px;font-weight:800;color:var(--azul-prof);">' + val + '</span>' +
+    '</div>';
+  }
+
+  function renderTablaAgua(){
+    var agua = TAPP.leer('registrosAgua', []).slice().sort(function(a,b){ return b.creado-a.creado; });
+    if (agua.length === 0) { document.getElementById('rp-contenido').innerHTML = vacio('💧','Sin registros de agua'); return; }
+    var filas = agua.map(function(r){
+      return '<tr><td>' + TAPP.formatoFechaCorta(r.fecha) + '</td><td>' + (r.estanque||'—') + '</td><td>' + r.temperatura + '°C</td><td>' + r.ph + '</td><td>' + r.oxigeno + ' mg/L</td></tr>';
+    }).join('');
+    document.getElementById('rp-contenido').innerHTML =
+      '<div class="tabla-wrap"><table class="tabla-simple"><thead><tr><th>Fecha</th><th>Estanque</th><th>Temp.</th><th>pH</th><th>O₂</th></tr></thead><tbody>' + filas + '</tbody></table></div>';
+  }
+
+  function renderTablaAlimento(){
+    var al = TAPP.leer('alimentaciones', []).slice().sort(function(a,b){ return b.creado-a.creado; });
+    if (al.length === 0) { document.getElementById('rp-contenido').innerHTML = vacio('🍽️','Sin registros de alimentación'); return; }
+    var filas = al.map(function(r){
+      return '<tr><td>' + TAPP.formatoFechaCorta(r.fecha) + '</td><td>' + r.momento + '</td><td>' + r.cantidad + ' kg</td><td>' + r.tipo + '</td></tr>';
+    }).join('');
+    document.getElementById('rp-contenido').innerHTML =
+      '<div class="tabla-wrap"><table class="tabla-simple"><thead><tr><th>Fecha</th><th>Momento</th><th>Cantidad</th><th>Tipo</th></tr></thead><tbody>' + filas + '</tbody></table></div>';
+  }
+
+  function renderTablaCrecim(){
+    var cr = TAPP.leer('crecimientos', []).slice().sort(function(a,b){ return b.creado-a.creado; });
+    if (cr.length === 0) { document.getElementById('rp-contenido').innerHTML = vacio('📈','Sin muestreos de crecimiento'); return; }
+    var filas = cr.map(function(r){
+      return '<tr><td>' + TAPP.formatoFechaCorta(r.fecha) + '</td><td>' + (r.estanque||'—') + '</td><td>' + r.pesoPromedio + ' g</td><td>' + r.npeces + '</td></tr>';
+    }).join('');
+    document.getElementById('rp-contenido').innerHTML =
+      '<div class="tabla-wrap"><table class="tabla-simple"><thead><tr><th>Fecha</th><th>Estanque</th><th>Peso prom.</th><th>N° peces</th></tr></thead><tbody>' + filas + '</tbody></table></div>';
+  }
+
+  function vacio(ic, msg){
+    return '<div class="vacio-msg"><div class="vm-icono">' + ic + '</div><p>' + msg + '</p></div>';
+  }
+
+  document.getElementById('rp-tabs').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-t]');
+    if (!btn) return;
+    tabActual = btn.dataset.t;
+    cont.querySelectorAll('#rp-tabs .tab-btn').forEach(function(b){ b.classList.toggle('activo', b===btn); });
+    if (tabActual === 'resumen') renderResumen();
+    if (tabActual === 'agua') renderTablaAgua();
+    if (tabActual === 'aliment') renderTablaAlimento();
+    if (tabActual === 'crecim') renderTablaCrecim();
+  });
+
+  renderResumen();
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: ASISTENCIA A PRÁCTICAS
+// ════════════════════════════════════════════════════════════════════════
+function renderAsistencia(cont){
+  var TAREAS_BASE = [
+    { id:'t1', txt:'Alimentación de la mañana', desc:'Verificar apetito y cantidad consumida' },
+    { id:'t2', txt:'Medición de calidad de agua', desc:'Temperatura, pH y oxígeno' },
+    { id:'t3', txt:'Inspección visual de las truchas', desc:'Comportamiento y mortalidad' },
+    { id:'t4', txt:'Limpieza de estanques / mallas', desc:'Retirar restos y sedimentos' },
+    { id:'t5', txt:'Alimentación de la tarde', desc:'Segunda ración del día' },
+    { id:'t6', txt:'Registro en bitácora', desc:'Anotar observaciones del día' }
+  ];
+
+  var hoy = TAPP.fechaHoy();
+  var registrosAsist = TAPP.leer('asistencia', {}); // { 'YYYY-MM-DD': {t1:true, t2:false, ...} }
+  var checkHoy = registrosAsist[hoy] || {};
+
+  var html = '';
+
+  html += '<div class="info-box">📋 Marca las tareas que completaste hoy <strong>' + TAPP.formatoFechaCorta(hoy) + '</strong>. El progreso se guarda automáticamente por día.</div>';
+
+  function progreso(){
+    var hechas = TAREAS_BASE.filter(function(t){ return checkHoy[t.id]; }).length;
+    return Math.round((hechas / TAREAS_BASE.length) * 100);
+  }
+
+  html += '<div class="card" style="text-align:center;">' +
+    '<div style="font-size:13px;font-weight:700;color:var(--azul-prof);margin-bottom:8px;">Progreso de hoy</div>' +
+    '<div style="font-size:30px;font-weight:800;color:var(--azul-medio);" id="as-progreso">' + progreso() + '%</div>' +
+    '<div class="medidor-barra" style="background:#E0EAF0;margin-top:10px;"><div id="as-barra" style="height:100%;background:linear-gradient(90deg,var(--azul-claro),var(--azul-medio));border-radius:6px;width:'+progreso()+'%;transition:width 0.3s;"></div></div>' +
+  '</div>';
+
+  html += '<button class="btn-compartir" id="as-compartir"><span class="ico">📤</span> Compartir progreso de hoy</button>';
+
+  html += '<div class="seccion-titulo">Tareas de hoy</div>';
+  html += '<div id="as-lista">';
+  TAREAS_BASE.forEach(function(t){
+    html += '<div class="check-item">' +
+      '<input type="checkbox" id="chk-' + t.id + '" ' + (checkHoy[t.id] ? 'checked' : '') + '>' +
+      '<div class="ci-txt"><label for="chk-' + t.id + '">' + t.txt + '<small>' + t.desc + '</small></label></div>' +
+    '</div>';
+  });
+  html += '</div>';
+
+  html += '<div class="seccion-titulo">Historial de asistencia</div>';
+  html += '<div id="as-historial"></div>';
+
+  cont.innerHTML = html;
+
+  function actualizarProgreso(){
+    var pct = progreso();
+    document.getElementById('as-progreso').textContent = pct + '%';
+    document.getElementById('as-barra').style.width = pct + '%';
+  }
+
+  TAREAS_BASE.forEach(function(t){
+    document.getElementById('chk-' + t.id).addEventListener('change', function(e){
+      checkHoy[t.id] = e.target.checked;
+      registrosAsist[hoy] = checkHoy;
+      TAPP.guardar('asistencia', registrosAsist);
+      actualizarProgreso();
+      renderHistorial();
+    });
+  });
+
+  function renderHistorial(){
+    var dias = Object.keys(registrosAsist).sort().reverse().slice(0, 10);
+    var hist = document.getElementById('as-historial');
+    if (dias.length === 0) {
+      hist.innerHTML = '<div class="vacio-msg"><div class="vm-icono">📋</div><p>Aún no hay historial</p></div>';
+      return;
+    }
+    hist.innerHTML = dias.map(function(d){
+      var chk = registrosAsist[d];
+      var hechas = TAREAS_BASE.filter(function(t){ return chk[t.id]; }).length;
+      var pct = Math.round((hechas/TAREAS_BASE.length)*100);
+      var color = pct === 100 ? 'var(--verde-ok)' : (pct >= 50 ? 'var(--amber)' : 'var(--rojo)');
+      var bg = pct === 100 ? '#E3F6EA' : (pct >= 50 ? '#FDF1DF' : '#FBE6E6');
+      return '<div class="registro-item">' +
+        '<div class="ri-icono" style="background:'+bg+';color:'+color+';">📋</div>' +
+        '<div class="ri-info"><div class="ri-titulo">' + hechas + ' / ' + TAREAS_BASE.length + ' tareas</div><div class="ri-detalle">' + pct + '% completado</div></div>' +
+        '<div class="ri-fecha">' + TAPP.formatoFechaCorta(d) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  renderHistorial();
+
+  document.getElementById('as-compartir').addEventListener('click', function(){
+    var hechas = TAREAS_BASE.filter(function(t){ return checkHoy[t.id]; });
+    var pendientes = TAREAS_BASE.filter(function(t){ return !checkHoy[t.id]; });
+
+    var texto = [
+      '📋 *Asistencia a Prácticas — MYYAX*', '',
+      '📅 ' + TAPP.formatoFechaCorta(hoy),
+      '✅ Progreso: ' + progreso() + '% (' + hechas.length + '/' + TAREAS_BASE.length + ' tareas)', ''
+    ];
+    if (hechas.length > 0) {
+      texto.push('Completadas:');
+      hechas.forEach(function(t){ texto.push('✓ ' + t.txt); });
+      texto.push('');
+    }
+    if (pendientes.length > 0) {
+      texto.push('Pendientes:');
+      pendientes.forEach(function(t){ texto.push('○ ' + t.txt); });
+    }
+
+    TAPP.compartirMenu(
+      { titulo:'Asistencia a Prácticas', texto: texto.join('\n') },
+      { titulo:'Asistencia a Prácticas', subtitulo: TAPP.formatoFechaCorta(hoy), icono:'📋',
+        color:'#5B8DEF', colorOscuro:'#3858B8',
+        filas: [
+          { label:'Progreso del día', valor: progreso() + '%' },
+          { label:'Tareas completadas', valor: hechas.length + ' / ' + TAREAS_BASE.length },
+          { label:'Pendientes', valor: pendientes.length }
+        ],
+        archivoNombre:'asistencia' }
+    );
+  });
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: CONTACTO
+// ════════════════════════════════════════════════════════════════════════
+function renderContacto(cont){
+  var contactos = TAPP.leer('contactos', [
+    { id:'c1', nombre:'Soporte técnico', detalle:'Asistencia general de la app', tel:'', tipo:'app', editable:false },
+    { id:'c2', nombre:'Médico veterinario / Sanidad acuícola', detalle:'Consultas sobre salud de las truchas', tel:'', tipo:'personalizado', editable:true },
+    { id:'c3', nombre:'Proveedor de alimento balanceado', detalle:'Pedidos y consultas', tel:'', tipo:'personalizado', editable:true },
+    { id:'c4', nombre:'Técnico / Asesor acuícola', detalle:'Asesoría en manejo de la piscigranja', tel:'', tipo:'personalizado', editable:true }
+  ]);
+
+  var html = '';
+
+  html += '<div class="info-box">📞 Guarda aquí los teléfonos de las personas o entidades que apoyan tu piscigranja. Toca "Editar" para agregar el número.</div>';
+
+  html += '<div class="seccion-titulo">Directorio</div>';
+  html += '<div id="co-lista"></div>';
+
+  cont.innerHTML = html;
+
+  function iconoTipo(tipo){
+    if (tipo === 'app') return '🛟';
+    return '👤';
+  }
+
+  function renderLista(){
+    var lista = document.getElementById('co-lista');
+    lista.innerHTML = contactos.map(function(c){
+      return '<div class="contacto-item">' +
+        '<div class="co-ico">' + iconoTipo(c.tipo) + '</div>' +
+        '<div class="co-info">' +
+          '<div class="co-nombre">' + c.nombre + '</div>' +
+          '<div class="co-detalle">' + (c.tel ? '📱 ' + c.tel : c.detalle) + '</div>' +
+        '</div>' +
+        (c.tel
+          ? '<a class="co-btn" href="tel:' + c.tel + '">Llamar</a>'
+          : (c.editable ? '<button class="co-btn" data-edit="' + c.id + '" style="border:none;cursor:pointer;">Editar</button>' : '')
+        ) +
+      '</div>';
+    }).join('');
+
+    lista.querySelectorAll('[data-edit]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        abrirEdicion(btn.dataset.edit);
+      });
+    });
+  }
+
+  function abrirEdicion(id){
+    var c = contactos.find(function(x){ return x.id === id; });
+    var nuevoTel = window.prompt('Número de teléfono para "' + c.nombre + '":', c.tel || '');
+    if (nuevoTel === null) return;
+    c.tel = nuevoTel.trim();
+    TAPP.guardar('contactos', contactos);
+    TAPP.toast('✅ Contacto actualizado');
+    renderLista();
+  }
+
+  renderLista();
+}
+// ════════════════════════════════════════════════════════════════════════
+//  VISTA: CLIMA
+// ════════════════════════════════════════════════════════════════════════
+function renderClima(cont){
+
+  // Ubicación por defecto: Aprisca Huamachuco (usa coordenadas de Huamachuco,
+  // ya que "Aprisca" es un caserío sin registro propio en bases de geocodificación)
+  var CIUDAD_DEFAULT = { nombre:'Aprisca Huamachuco', pais:'La Libertad, Perú', lat:-7.8121, lon:-78.0487 };
+
+  var html = '';
+  html += '<div class="buscador" style="position:relative;">' +
+    '<input type="text" id="cl-input" placeholder="Buscar otra ubicación..." autocomplete="off" ' +
+      'style="flex:1;border:1.5px solid var(--borde);border-radius:14px;padding:11px 14px;font-size:14px;outline:none;">' +
+    '<button id="cl-buscar" style="border:none;background:var(--azul-medio);color:#fff;width:44px;border-radius:14px;font-size:17px;">🔍</button>' +
+    '<div class="sugerencias" id="cl-sugerencias" style="position:absolute;top:50px;left:0;right:44px;background:#fff;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.18);overflow:hidden;z-index:50;display:none;"></div>' +
+  '</div>';
+
+  html += '<div id="cl-resultado"><div class="estado-msg" style="text-align:center;padding:40px;color:var(--gris-claro);">Cargando clima...</div></div>';
+
+  cont.innerHTML = html;
+
+  var resultado = document.getElementById('cl-resultado');
+  var inputCiudad = document.getElementById('cl-input');
+  var btnBuscar = document.getElementById('cl-buscar');
+  var sugerencias = document.getElementById('cl-sugerencias');
+
+  function infoClimaCodigo(code, esNoche){
+    var map = {
+      0:{ico:'☀️',desc:'Despejado',tipo:'soleado'}, 1:{ico:'🌤️',desc:'Mayormente despejado',tipo:'soleado'},
+      2:{ico:'⛅',desc:'Parcialmente nublado',tipo:'nublado'}, 3:{ico:'☁️',desc:'Nublado',tipo:'nublado'},
+      45:{ico:'🌫️',desc:'Neblina',tipo:'niebla'}, 48:{ico:'🌫️',desc:'Niebla escarchada',tipo:'niebla'},
+      51:{ico:'🌦️',desc:'Llovizna ligera',tipo:'lluvia'}, 53:{ico:'🌦️',desc:'Llovizna',tipo:'lluvia'},
+      55:{ico:'🌧️',desc:'Llovizna intensa',tipo:'lluvia'}, 61:{ico:'🌧️',desc:'Lluvia ligera',tipo:'lluvia'},
+      63:{ico:'🌧️',desc:'Lluvia moderada',tipo:'lluvia'}, 65:{ico:'🌧️',desc:'Lluvia intensa',tipo:'lluvia'},
+      71:{ico:'🌨️',desc:'Nevada ligera',tipo:'nieve'}, 73:{ico:'🌨️',desc:'Nevada moderada',tipo:'nieve'},
+      75:{ico:'❄️',desc:'Nevada intensa',tipo:'nieve'}, 80:{ico:'🌦️',desc:'Lluvia ligera',tipo:'lluvia'},
+      81:{ico:'🌧️',desc:'Lluvia moderada',tipo:'lluvia'}, 82:{ico:'⛈️',desc:'Lluvia violenta',tipo:'tormenta'},
+      95:{ico:'⛈️',desc:'Tormenta eléctrica',tipo:'tormenta'}, 96:{ico:'⛈️',desc:'Tormenta con granizo',tipo:'tormenta'},
+      99:{ico:'⛈️',desc:'Tormenta fuerte',tipo:'tormenta'}
+    };
+    var info = map[code] || { ico:'🌡️', desc:'Variable', tipo:'nublado' };
+    if (esNoche && info.tipo === 'soleado') info = { ico: code===0?'🌙':'🌥️', desc: code===0?'Despejado':'Parc. nublado', tipo:'noche' };
+    return info;
+  }
+
+  function fondoTipo(tipo){
+    var map = {
+      soleado:'linear-gradient(160deg,#6FCBF5,#3FA9E8)', nublado:'linear-gradient(160deg,#4A8FE0,#3868C9)',
+      lluvia:'linear-gradient(160deg,#5C5FC9,#3D3FA8)', tormenta:'linear-gradient(160deg,#4A6FE0,#2C4CC4)',
+      nieve:'linear-gradient(160deg,#A8C8EE,#7FA8DB)', noche:'linear-gradient(160deg,#2A2E7A,#161A52)',
+      niebla:'linear-gradient(160deg,#7A8AA8,#586886)'
+    };
+    return map[tipo] || map.soleado;
+  }
+
+  function cargarClima(ciudad){
+    resultado.innerHTML = '<div class="estado-msg" style="text-align:center;padding:40px;color:var(--gris-claro);">Cargando clima de ' + ciudad.nombre + '...</div>';
+
+    var url = 'https://api.open-meteo.com/v1/forecast' +
+      '?latitude=' + ciudad.lat + '&longitude=' + ciudad.lon +
+      '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day' +
+      '&daily=weather_code,temperature_2m_max,temperature_2m_min' +
+      '&timezone=auto&forecast_days=5';
+
+    fetch(url)
+      .then(function(r){ if(!r.ok) throw new Error(); return r.json(); })
+      .then(function(data){ render(data, ciudad); })
+      .catch(function(){
+        resultado.innerHTML = '<div class="estado-msg" style="text-align:center;padding:40px;color:var(--rojo);">⚠️ No se pudo cargar el clima de ' + ciudad.nombre + '.</div>';
+      });
+  }
+
+  function render(data, ciudad){
+    var cur = data.current;
+    var esNoche = cur.is_day === 0;
+    var info = infoClimaCodigo(cur.weather_code, esNoche);
+    var temp = Math.round(cur.temperature_2m);
+    var sens = Math.round(cur.apparent_temperature);
+    var hum = cur.relative_humidity_2m;
+    var viento = Math.round(cur.wind_speed_10m);
+
+    var diasSemana = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    var diasHTML = '';
+    for (var d=0; d<Math.min(5,data.daily.time.length); d++){
+      var fecha = new Date(data.daily.time[d] + 'T00:00:00');
+      var nombreDia = d===0 ? 'Hoy' : diasSemana[fecha.getDay()];
+      var dInfo = infoClimaCodigo(data.daily.weather_code[d], false);
+      var max = Math.round(data.daily.temperature_2m_max[d]);
+      var min = Math.round(data.daily.temperature_2m_min[d]);
+      diasHTML += '<div style="display:flex;align-items:center;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,0.15);font-size:13px;color:#fff;">' +
+        '<div style="flex:1;font-weight:700;">' + nombreDia + '</div>' +
+        '<div style="flex:0.5;font-size:20px;text-align:center;">' + dInfo.ico + '</div>' +
+        '<div style="flex:1;text-align:right;font-weight:700;">' + max + '°<span style="opacity:0.65;margin-left:6px;">' + min + '°</span></div>' +
+      '</div>';
+    }
+
+    var relevanciaPiscicola = '';
+    if (temp <= 5) relevanciaPiscicola = '🥶 Temperatura ambiente muy baja, vigila que el agua no baje de 13°C.';
+    else if (temp >= 28) relevanciaPiscicola = '🥵 Calor intenso: revisa oxigenación del agua con más frecuencia.';
+    else relevanciaPiscicola = '✅ Condiciones ambientales normales para la operación de la piscigranja.';
+
+    resultado.innerHTML =
+      '<div style="border-radius:22px;padding:22px 18px;color:#fff;background:' + fondoTipo(info.tipo) + ';box-shadow:0 10px 24px rgba(0,0,0,0.18);">' +
+        '<div style="text-align:center;font-size:14px;font-weight:700;">📍 ' + ciudad.nombre + '</div>' +
+        '<div style="text-align:center;font-size:11px;opacity:0.8;margin-bottom:10px;">' + (ciudad.pais||'') + '</div>' +
+        '<div style="text-align:center;font-size:64px;line-height:1;">' + info.ico + '</div>' +
+        '<div style="text-align:center;font-size:50px;font-weight:800;margin-top:6px;">' + temp + '°</div>' +
+        '<div style="text-align:center;font-size:15px;font-weight:600;opacity:0.95;">' + info.desc + '</div>' +
+        '<div style="text-align:center;font-size:11.5px;opacity:0.75;margin-top:2px;">Sensación ' + sens + '°</div>' +
+
+        '<div style="display:flex;gap:8px;margin-top:18px;">' +
+          '<div style="flex:1;background:rgba(255,255,255,0.16);border-radius:14px;padding:10px;text-align:center;"><div style="font-size:18px;">💧</div><div style="font-size:13px;font-weight:700;margin-top:2px;">' + hum + '%</div><div style="font-size:9px;opacity:0.75;">Humedad</div></div>' +
+          '<div style="flex:1;background:rgba(255,255,255,0.16);border-radius:14px;padding:10px;text-align:center;"><div style="font-size:18px;">💨</div><div style="font-size:13px;font-weight:700;margin-top:2px;">' + viento + ' km/h</div><div style="font-size:9px;opacity:0.75;">Viento</div></div>' +
+        '</div>' +
+
+        '<div style="font-size:11px;font-weight:700;opacity:0.8;margin:18px 0 8px 2px;">PRÓXIMOS 5 DÍAS</div>' +
+        diasHTML +
+      '</div>' +
+
+      '<div class="info-box" style="margin-top:14px;">' + relevanciaPiscicola + '</div>';
+  }
+
+  var debounce;
+  inputCiudad.addEventListener('input', function(){
+    clearTimeout(debounce);
+    var val = this.value;
+    debounce = setTimeout(function(){ buscarSugerencias(val); }, 380);
+  });
+  inputCiudad.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') { e.preventDefault(); buscarPrimero(this.value); }
+  });
+  btnBuscar.addEventListener('click', function(){ buscarPrimero(inputCiudad.value); });
+  document.addEventListener('click', function(e){
+    if (!e.target.closest('.buscador')) sugerencias.style.display = 'none';
+  });
+
+  function buscarSugerencias(q){
+    if (!q || q.trim().length < 2) { sugerencias.style.display='none'; return; }
+    fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(q.trim()) + '&count=5&language=es&format=json')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        sugerencias.innerHTML = '';
+        if (!data.results || !data.results.length) { sugerencias.style.display='none'; return; }
+        data.results.forEach(function(l){
+          var div = document.createElement('div');
+          div.style.padding = '11px 14px';
+          div.style.fontSize = '13.5px';
+          div.style.borderBottom = '1px solid #f0f0f0';
+          div.style.cursor = 'pointer';
+          div.innerHTML = '<strong>' + l.name + '</strong><div style="color:#999;font-size:11.5px;">' + (l.admin1||'') + (l.country ? ', '+l.country : '') + '</div>';
+          div.onclick = function(){
+            sugerencias.style.display = 'none';
+            inputCiudad.value = l.name;
+            cargarClima({ nombre:l.name, pais:(l.admin1?l.admin1+', ':'')+(l.country||''), lat:l.latitude, lon:l.longitude });
+          };
+          sugerencias.appendChild(div);
+        });
+        sugerencias.style.display = 'block';
+      }).catch(function(){ sugerencias.style.display='none'; });
+  }
+
+  function buscarPrimero(q){
+    if (!q || q.trim().length < 2) return;
+    sugerencias.style.display = 'none';
+    fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(q.trim()) + '&count=1&language=es&format=json')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (data.results && data.results.length) {
+          var l = data.results[0];
+          cargarClima({ nombre:l.name, pais:(l.admin1?l.admin1+', ':'')+(l.country||''), lat:l.latitude, lon:l.longitude });
+        } else {
+          TAPP.toast('No se encontró "' + q + '"', 'bad');
+        }
+      }).catch(function(){ TAPP.toast('Error de conexión', 'bad'); });
+  }
+
+  cargarClima(CIUDAD_DEFAULT);
+}
+// ════════════════════════════════════════════════════════════════════════
+//  INICIALIZACIÓN
+// ════════════════════════════════════════════════════════════════════════
+irAVista('inicio');
+
+</script>
+</body>
+</html>
