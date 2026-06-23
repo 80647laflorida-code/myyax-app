@@ -1,0 +1,2057 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2E7D32">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>AhorraYa – Control Financiero Personal</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --verde:#2E7D32; --verde-claro:#4CAF50; --verde-muy-claro:#E8F5E9;
+    --rojo:#C62828; --rojo-claro:#FFEBEE;
+    --azul:#1565C0; --azul-claro:#E3F2FD;
+    --naranja:#E65100; --naranja-claro:#FFF3E0;
+    --gris:#F5F5F5; --gris-medio:#E0E0E0; --gris-texto:#757575;
+    --blanco:#FFFFFF; --texto:#212121; --texto-sec:#616161;
+    --sombra:0 2px 8px rgba(0,0,0,0.10);
+    --radio:14px; --radio-sm:8px;
+    font-size:15px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#EEEEEE;color:var(--texto);min-height:100vh;max-width:480px;margin:0 auto;position:relative;}
+  /* PANTALLAS */
+  .pantalla{display:none;padding-bottom:72px;min-height:100vh;animation:fadeIn .2s ease;}
+  .pantalla.activa{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* TOPBAR */
+  .topbar{background:var(--verde);color:#fff;padding:14px 16px 16px;position:sticky;top:0;z-index:100;}
+  .topbar-row{display:flex;justify-content:space-between;align-items:center;}
+  .topbar h1{font-size:18px;font-weight:600;letter-spacing:.2px;}
+  .topbar .sub{font-size:12px;opacity:.8;margin-top:1px;}
+  .topbar-icons{display:flex;gap:14px;}
+  .topbar-icons button{background:none;border:none;color:rgba(255,255,255,.85);font-size:18px;cursor:pointer;padding:2px;}
+
+  /* SALDO HERO */
+  .saldo-hero{background:var(--verde);padding:0 16px 20px;margin-top:-1px;}
+  .saldo-card{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:var(--radio);padding:16px;}
+  .saldo-label{font-size:11px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
+  .saldo-monto{font-size:32px;font-weight:700;color:#fff;letter-spacing:-1px;margin-bottom:12px;}
+  .saldo-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .mini-stat{background:rgba(255,255,255,.12);border-radius:var(--radio-sm);padding:10px 12px;}
+  .mini-stat .lbl{font-size:10px;color:rgba(255,255,255,.7);margin-bottom:2px;}
+  .mini-stat .val{font-size:15px;font-weight:600;color:#fff;}
+  .mini-stat .val.rojo{color:#FFCDD2;}
+
+  /* SECCIÓN */
+  .seccion{padding:14px 16px;}
+  .seccion-titulo{font-size:11px;font-weight:700;color:var(--gris-texto);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;}
+
+  /* TARJETAS STATS */
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;}
+  .stat-card{background:var(--blanco);border-radius:var(--radio);padding:12px 14px;box-shadow:var(--sombra);}
+  .stat-icon{width:34px;height:34px;border-radius:var(--radio-sm);display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:16px;}
+  .stat-icon.v{background:var(--verde-muy-claro);color:var(--verde);}
+  .stat-icon.r{background:var(--rojo-claro);color:var(--rojo);}
+  .stat-icon.a{background:var(--azul-claro);color:var(--azul);}
+  .stat-icon.n{background:var(--naranja-claro);color:var(--naranja);}
+  .stat-lbl{font-size:11px;color:var(--texto-sec);margin-bottom:2px;}
+  .stat-val{font-size:16px;font-weight:700;color:var(--texto);}
+  .stat-val.verde{color:var(--verde);}
+  .stat-val.rojo{color:var(--rojo);}
+
+  /* TARJETA GRÁFICO */
+  .chart-card{background:var(--blanco);border-radius:var(--radio);padding:16px;box-shadow:var(--sombra);margin-bottom:14px;}
+  .chart-card h3{font-size:13px;font-weight:600;color:var(--texto-sec);margin-bottom:12px;}
+  .chart-row{display:flex;align-items:center;gap:16px;}
+  .chart-wrap{position:relative;width:100px;height:100px;flex-shrink:0;}
+  .chart-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
+  .chart-center .cv{font-size:13px;font-weight:700;color:var(--texto);}
+  .chart-center .cl{font-size:9px;color:var(--texto-sec);}
+  .leyenda{flex:1;}
+  .leyenda-item{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:11px;color:var(--texto-sec);}
+  .leyenda-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .leyenda-item span:last-child{margin-left:auto;font-weight:600;color:var(--texto);}
+
+  /* MOVIMIENTOS */
+  .mov-list{display:flex;flex-direction:column;gap:8px;}
+  .mov-item{background:var(--blanco);border-radius:var(--radio);padding:11px 14px;display:flex;align-items:center;gap:12px;box-shadow:var(--sombra);}
+  .mov-icono{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;}
+  .mov-info{flex:1;min-width:0;}
+  .mov-desc{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mov-cat{font-size:11px;color:var(--texto-sec);margin-top:1px;}
+  .mov-derecha{text-align:right;}
+  .mov-monto{font-size:14px;font-weight:700;}
+  .mov-monto.pos{color:var(--verde);}
+  .mov-monto.neg{color:var(--rojo);}
+  .mov-acciones{display:flex;gap:8px;margin-top:4px;justify-content:flex-end;}
+  .mov-acciones button{background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;border-radius:4px;}
+  .mov-acciones button.editar{color:var(--azul);}
+  .mov-acciones button.borrar{color:var(--rojo);}
+
+  /* META AHORRO */
+  .meta-card{background:var(--blanco);border-radius:var(--radio);padding:14px;box-shadow:var(--sombra);margin-bottom:10px;}
+  .meta-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .meta-icono-wrap{display:flex;align-items:center;gap:8px;}
+  .meta-icono{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .meta-nombre{font-size:14px;font-weight:600;}
+  .badge-pct{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;}
+  .progress-bar{height:9px;background:#E0E0E0;border-radius:5px;overflow:hidden;margin-bottom:6px;}
+  .progress-fill{height:100%;border-radius:5px;transition:width .5s ease;}
+  .meta-amounts{display:flex;justify-content:space-between;font-size:11px;color:var(--texto-sec);}
+  .meta-vence{font-size:11px;color:var(--texto-sec);margin-top:5px;}
+  .btn-aporte{margin-top:10px;width:100%;background:var(--verde);color:#fff;border:none;border-radius:var(--radio-sm);padding:9px;font-size:13px;font-weight:600;cursor:pointer;}
+
+  /* FORMULARIOS */
+  .form-card{background:var(--blanco);border-radius:var(--radio);padding:16px;box-shadow:var(--sombra);margin-bottom:12px;}
+  .form-field{margin-bottom:12px;}
+  .form-label{font-size:11px;font-weight:600;color:var(--texto-sec);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+  .form-input{width:100%;padding:11px 12px;border:1.5px solid var(--gris-medio);border-radius:var(--radio-sm);font-size:15px;color:var(--texto);background:var(--gris);font-family:inherit;outline:none;transition:border-color .2s;}
+  .form-input:focus{border-color:var(--verde);background:var(--blanco);}
+  .form-input.monto{font-size:24px;font-weight:700;text-align:center;}
+  .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px;}
+  .cat-btn{display:flex;align-items:center;gap:6px;padding:9px 10px;border:1.5px solid var(--gris-medio);border-radius:var(--radio-sm);background:var(--gris);font-size:12px;color:var(--texto-sec);cursor:pointer;font-family:inherit;transition:all .15s;}
+  .cat-btn:hover{border-color:var(--verde);color:var(--verde);}
+  .cat-btn.sel{background:var(--verde-muy-claro);border-color:var(--verde);color:var(--verde);font-weight:600;}
+  .cat-btn i{font-size:14px;}
+  .btn-guardar{width:100%;background:var(--verde);color:#fff;border:none;border-radius:var(--radio-sm);padding:13px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px;transition:background .2s;}
+  .btn-guardar:active{background:#1B5E20;}
+  .btn-guardar.rojo{background:var(--rojo);}
+  .btn-guardar.rojo:active{background:#B71C1C;}
+
+  /* CALENDARIO */
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .cal-nav h2{font-size:15px;font-weight:700;color:var(--texto);}
+  .cal-nav button{background:none;border:none;font-size:18px;cursor:pointer;color:var(--verde);padding:4px 8px;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+  .cal-head{font-size:10px;font-weight:700;text-align:center;color:var(--gris-texto);padding:4px 0;}
+  .cal-dia{font-size:12px;text-align:center;padding:7px 2px;border-radius:var(--radio-sm);color:var(--texto);position:relative;cursor:pointer;}
+  .cal-dia:hover{background:var(--verde-muy-claro);}
+  .cal-dia.hoy{background:var(--verde);color:#fff;font-weight:700;}
+  .cal-dia.con-mov::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;background:var(--verde);border-radius:50%;}
+  .cal-dia.hoy::after{background:#fff;}
+  .cal-dia.apagado{color:#BDBDBD;pointer-events:none;}
+  .filtros-cal{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+  .filtro-btn{padding:6px 12px;border-radius:20px;border:1.5px solid var(--gris-medio);background:var(--gris);font-size:12px;color:var(--texto-sec);cursor:pointer;font-family:inherit;}
+  .filtro-btn.activo{background:var(--verde);color:#fff;border-color:var(--verde);}
+
+  /* PERFIL */
+  .perfil-avatar{width:72px;height:72px;border-radius:50%;background:var(--verde-muy-claro);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:var(--verde);margin:0 auto 10px;}
+  .perfil-nombre{font-size:17px;font-weight:700;text-align:center;margin-bottom:2px;}
+  .perfil-email{font-size:12px;color:var(--texto-sec);text-align:center;margin-bottom:18px;}
+  .setting-row{display:flex;align-items:center;gap:10px;padding:13px 14px;background:var(--blanco);border-radius:var(--radio);box-shadow:var(--sombra);margin-bottom:8px;cursor:pointer;}
+  .setting-ic{font-size:18px;width:26px;text-align:center;color:var(--verde);}
+  .setting-lbl{flex:1;font-size:13px;color:var(--texto);}
+  .setting-right{font-size:12px;color:var(--texto-sec);}
+  .toggle{width:38px;height:21px;background:#BDBDBD;border-radius:11px;position:relative;transition:background .2s;cursor:pointer;}
+  .toggle.on{background:var(--verde);}
+  .toggle::after{content:'';position:absolute;left:3px;top:3px;width:15px;height:15px;background:#fff;border-radius:50%;transition:left .2s;}
+  .toggle.on::after{left:20px;}
+
+  /* BARRA INFERIOR */
+  .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--blanco);border-top:1px solid var(--gris-medio);display:flex;z-index:200;box-shadow:0 -2px 10px rgba(0,0,0,.08);}
+  .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 0 8px;cursor:pointer;color:var(--gris-texto);font-size:9px;gap:3px;border:none;background:none;font-family:inherit;}
+  .nav-item i{font-size:20px;transition:color .15s;}
+  .nav-item.activo{color:var(--verde);}
+  .nav-fab{width:52px;height:52px;background:var(--verde);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-18px;box-shadow:0 4px 14px rgba(46,125,50,.4);cursor:pointer;border:none;}
+  .nav-fab i{font-size:24px;color:#fff;}
+
+  /* MODALES */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:flex-end;justify-content:center;}
+  .modal-overlay.visible{display:flex;animation:fadeOverlay .2s ease;}
+  @keyframes fadeOverlay{from{background:rgba(0,0,0,0)}to{background:rgba(0,0,0,.5)}}
+  .modal{background:var(--blanco);border-radius:var(--radio) var(--radio) 0 0;width:100%;max-width:480px;padding:20px 16px 30px;animation:slideUp .25s ease;}
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+  .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .modal-header h2{font-size:17px;font-weight:700;}
+  .modal-close{background:none;border:none;font-size:22px;color:var(--texto-sec);cursor:pointer;padding:0 4px;}
+
+  /* FAB MENÚ */
+  .fab-menu{display:none;position:fixed;bottom:72px;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:300px;background:var(--blanco);border-radius:var(--radio);box-shadow:0 8px 30px rgba(0,0,0,.18);z-index:250;padding:8px;}
+  .fab-menu.visible{display:block;animation:fadeIn .15s ease;}
+  .fab-opcion{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--radio-sm);cursor:pointer;color:var(--texto);font-size:14px;font-weight:500;border:none;background:none;width:100%;font-family:inherit;}
+  .fab-opcion:hover{background:var(--gris);}
+  .fab-opcion i{font-size:20px;width:26px;}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:85px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:400;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+  .toast.show{opacity:1;}
+
+  /* CHIPS filtro */
+  .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none;}
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{flex-shrink:0;padding:6px 14px;border-radius:20px;border:1.5px solid var(--gris-medio);background:var(--gris);font-size:12px;color:var(--texto-sec);cursor:pointer;font-family:inherit;white-space:nowrap;}
+  .chip.activo{background:var(--verde);color:#fff;border-color:var(--verde);}
+
+  /* VACÍO */
+  .vacio{text-align:center;padding:40px 20px;color:var(--texto-sec);}
+  .vacio i{font-size:48px;opacity:.3;display:block;margin-bottom:12px;}
+  .vacio p{font-size:14px;}
+
+  /* REPORTES */
+  .reporte-card{background:var(--blanco);border-radius:var(--radio);padding:14px;box-shadow:var(--sombra);margin-bottom:10px;}
+  .reporte-card h3{font-size:13px;font-weight:700;color:var(--texto-sec);margin-bottom:10px;}
+  .export-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+  .btn-export{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:var(--radio-sm);border:1.5px solid var(--gris-medio);background:var(--gris);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .btn-export.pdf{border-color:var(--rojo);color:var(--rojo);background:var(--rojo-claro);}
+  .btn-export.excel{border-color:var(--verde);color:var(--verde);background:var(--verde-muy-claro);}
+
+  .empty-btn{width:100%;border:2px dashed var(--gris-medio);background:transparent;border-radius:var(--radio);padding:16px;font-size:13px;color:var(--texto-sec);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;}
+  .divider{height:1px;background:var(--gris-medio);margin:4px 0 12px;}
+</style>
+</head>
+<body>
+
+<!-- ===================== DASHBOARD ===================== -->
+<div id="p-dashboard" class="pantalla activa">
+  <div class="topbar">
+    <div class="topbar-row">
+      <div>
+        <div style="font-size:12px;opacity:.8;">Buen día 👋</div>
+        <h1>AhorraYa</h1>
+      </div>
+      <div class="topbar-icons">
+        <button onclick="mostrarToast('Sin notificaciones nuevas')"><i class="fa-regular fa-bell"></i></button>
+        <button onclick="irA('p-perfil','nav-perfil')"><i class="fa-regular fa-user"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="saldo-hero">
+    <div class="saldo-card">
+      <div class="saldo-label">Saldo disponible</div>
+      <div class="saldo-monto" id="dash-saldo">S/ 0.00</div>
+      <div class="saldo-row">
+        <div class="mini-stat">
+          <div class="lbl">↑ Ingresos del mes</div>
+          <div class="val" id="dash-ing">S/ 0.00</div>
+        </div>
+        <div class="mini-stat">
+          <div class="lbl">↓ Egresos del mes</div>
+          <div class="val rojo" id="dash-egr">S/ 0.00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="seccion">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon v"><i class="fa-solid fa-piggy-bank"></i></div>
+        <div class="stat-lbl">Ahorro acumulado</div>
+        <div class="stat-val verde" id="dash-ahorro">S/ 0.00</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon a"><i class="fa-solid fa-bullseye"></i></div>
+        <div class="stat-lbl">Avance de meta</div>
+        <div class="stat-val" id="dash-meta-pct">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon n"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="stat-lbl">Vs. mes anterior</div>
+        <div class="stat-val" id="dash-variacion">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon r"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="stat-lbl">Mayor gasto</div>
+        <div class="stat-val rojo" id="dash-mayor-gasto" style="font-size:13px;">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="seccion" style="padding-top:0">
+    <div class="seccion-titulo">Gastos por categoría</div>
+    <div class="chart-card">
+      <div class="chart-row">
+        <div class="chart-wrap">
+          <canvas id="chartDonut"></canvas>
+          <div class="chart-center"><div class="cv" id="donut-total">S/0</div><div class="cl">total</div></div>
+        </div>
+        <div class="leyenda" id="leyenda-donut"></div>
+      </div>
+    </div>
+
+    <div class="seccion-titulo">Ingresos vs Egresos (6 meses)</div>
+    <div class="chart-card">
+      <canvas id="chartBarras" height="100"></canvas>
+    </div>
+
+    <div class="seccion-titulo" style="margin-top:4px;">Últimos movimientos</div>
+    <div class="mov-list" id="dash-movimientos"></div>
+  </div>
+</div>
+
+<!-- ===================== INGRESOS ===================== -->
+<div id="p-ingresos" class="pantalla">
+  <div class="topbar">
+    <div class="topbar-row">
+      <h1>Ingresos</h1>
+      <div class="topbar-icons">
+        <button onclick="abrirModalIngreso()"><i class="fa-solid fa-plus"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="seccion">
+    <div class="chips" id="chips-ing">
+      <button class="chip activo" onclick="filtrarMov('ing','Todos',this)">Todos</button>
+      <button class="chip" onclick="filtrarMov('ing','Salario',this)">Salario</button>
+      <button class="chip" onclick="filtrarMov('ing','Freelance',this)">Freelance</button>
+      <button class="chip" onclick="filtrarMov('ing','Inversión',this)">Inversión</button>
+      <button class="chip" onclick="filtrarMov('ing','Bono',this)">Bono</button>
+      <button class="chip" onclick="filtrarMov('ing','Otro',this)">Otro</button>
+    </div>
+    <div class="mov-list" id="lista-ingresos"></div>
+  </div>
+</div>
+
+<!-- ===================== EGRESOS ===================== -->
+<div id="p-egresos" class="pantalla">
+  <div class="topbar">
+    <div class="topbar-row">
+      <h1>Egresos</h1>
+      <div class="topbar-icons">
+        <button onclick="abrirModalEgreso()"><i class="fa-solid fa-plus"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="seccion">
+    <div class="chips" id="chips-egr">
+      <button class="chip activo" onclick="filtrarMov('egr','Todos',this)">Todos</button>
+      <button class="chip" onclick="filtrarMov('egr','Alimentación',this)">🥗 Alimentación</button>
+      <button class="chip" onclick="filtrarMov('egr','Transporte',this)">🚌 Transporte</button>
+      <button class="chip" onclick="filtrarMov('egr','Salud',this)">❤️ Salud</button>
+      <button class="chip" onclick="filtrarMov('egr','Educación',this)">📚 Educación</button>
+      <button class="chip" onclick="filtrarMov('egr','Servicios',this)">⚡ Servicios</button>
+      <button class="chip" onclick="filtrarMov('egr','Entretenimiento',this)">🎬 Entretenimiento</button>
+      <button class="chip" onclick="filtrarMov('egr','Otros',this)">Otros</button>
+    </div>
+    <div class="mov-list" id="lista-egresos"></div>
+  </div>
+</div>
+
+<!-- ===================== AHORRO ===================== -->
+<div id="p-ahorro" class="pantalla">
+  <div class="topbar">
+    <div class="topbar-row">
+      <h1>Metas de ahorro</h1>
+      <div class="topbar-icons">
+        <button onclick="abrirModalMeta()"><i class="fa-solid fa-plus"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="seccion">
+    <div id="lista-metas"></div>
+    <button class="empty-btn" onclick="abrirModalMeta()"><i class="fa-solid fa-plus"></i> Nueva meta de ahorro</button>
+  </div>
+</div>
+
+<!-- ===================== CALENDARIO ===================== -->
+<div id="p-calendario" class="pantalla">
+  <div class="topbar">
+    <div class="topbar-row">
+      <h1>Calendario</h1>
+    </div>
+  </div>
+  <div class="seccion">
+    <div class="chart-card" style="padding:14px;">
+      <div class="cal-nav">
+        <button onclick="cambiarMes(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <h2 id="cal-titulo"></h2>
+        <button onclick="cambiarMes(1)"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+
+    <div class="filtros-cal">
+      <button class="filtro-btn activo" onclick="filtroCalendario('todos',this)">Todos</button>
+      <button class="filtro-btn" onclick="filtroCalendario('ingresos',this)">Solo ingresos</button>
+      <button class="filtro-btn" onclick="filtroCalendario('egresos',this)">Solo egresos</button>
+    </div>
+
+    <div class="seccion-titulo" id="cal-dia-titulo">Movimientos de hoy</div>
+    <div class="mov-list" id="cal-movimientos"></div>
+  </div>
+</div>
+
+<!-- ===================== PERFIL ===================== -->
+<div id="p-perfil" class="pantalla">
+  <div class="topbar"><div class="topbar-row"><h1>Mi perfil</h1></div></div>
+  <div class="seccion">
+    <div class="form-card" style="text-align:center;padding:24px 16px 18px;">
+      <div class="perfil-avatar" id="perfil-iniciales">MR</div>
+      <div class="perfil-nombre" id="perfil-nombre">Miguel Robles</div>
+      <div class="perfil-email" id="perfil-email">miguel@correo.com</div>
+      <button class="chip" onclick="abrirModalPerfil()" style="margin:0 auto;"><i class="fa-solid fa-pen"></i> Editar perfil</button>
+    </div>
+
+    <div class="seccion-titulo">Configuración</div>
+    <div class="setting-row" onclick="abrirModalMoneda()">
+      <i class="fa-solid fa-coins setting-ic"></i>
+      <span class="setting-lbl">Moneda</span>
+      <span class="setting-right" id="setting-moneda">S/ Sol peruano</span>
+      <i class="fa-solid fa-chevron-right" style="color:#BDBDBD;font-size:12px;"></i>
+    </div>
+    <div class="setting-row" onclick="toggleDarkMode()">
+      <i class="fa-solid fa-moon setting-ic"></i>
+      <span class="setting-lbl">Modo oscuro</span>
+      <div class="toggle" id="toggle-dark"></div>
+    </div>
+    <div class="setting-row" onclick="mostrarToast('PIN configurado correctamente')">
+      <i class="fa-solid fa-lock setting-ic"></i>
+      <span class="setting-lbl">PIN de seguridad</span>
+      <i class="fa-solid fa-chevron-right" style="color:#BDBDBD;font-size:12px;"></i>
+    </div>
+    <div class="setting-row" onclick="mostrarToast('Huella digital activada')">
+      <i class="fa-solid fa-fingerprint setting-ic"></i>
+      <span class="setting-lbl">Huella digital</span>
+      <div class="toggle on"></div>
+    </div>
+
+    <div class="seccion-titulo" style="margin-top:8px;">Reportes y exportación</div>
+    <div class="export-row">
+      <button class="btn-export pdf" onclick="exportarPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+      <button class="btn-export excel" onclick="exportarExcel()"><i class="fa-solid fa-file-excel"></i> Excel</button>
+    </div>
+
+    <div class="setting-row" style="margin-top:12px;border:1.5px solid var(--rojo-claro);" onclick="mostrarToast('Sesión cerrada')">
+      <i class="fa-solid fa-right-from-bracket setting-ic" style="color:var(--rojo);"></i>
+      <span class="setting-lbl" style="color:var(--rojo);">Cerrar sesión</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== BARRA INFERIOR ===================== -->
+<nav class="bottom-nav">
+  <button class="nav-item activo" id="nav-dashboard" onclick="irA('p-dashboard','nav-dashboard')">
+    <i class="fa-solid fa-house"></i><span>Inicio</span>
+  </button>
+  <button class="nav-item" id="nav-ingresos" onclick="irA('p-ingresos','nav-ingresos')">
+    <i class="fa-solid fa-arrow-trend-up"></i><span>Ingresos</span>
+  </button>
+  <button class="nav-fab" id="btn-fab" onclick="toggleFab()">
+    <i class="fa-solid fa-plus" id="fab-icon"></i>
+  </button>
+  <button class="nav-item" id="nav-egresos" onclick="irA('p-egresos','nav-egresos')">
+    <i class="fa-solid fa-arrow-trend-down"></i><span>Egresos</span>
+  </button>
+  <button class="nav-item" id="nav-ahorro" onclick="irA('p-ahorro','nav-ahorro')">
+    <i class="fa-solid fa-piggy-bank"></i><span>Ahorro</span>
+  </button>
+</nav>
+
+<!-- FAB MENU -->
+<div class="fab-menu" id="fab-menu">
+  <button class="fab-opcion" onclick="cerrarFab();abrirModalIngreso()"><i class="fa-solid fa-arrow-trend-up" style="color:var(--verde);"></i> Registrar ingreso</button>
+  <button class="fab-opcion" onclick="cerrarFab();abrirModalEgreso()"><i class="fa-solid fa-arrow-trend-down" style="color:var(--rojo);"></i> Registrar gasto</button>
+  <button class="fab-opcion" onclick="cerrarFab();irA('p-ahorro','nav-ahorro');abrirModalMeta()"><i class="fa-solid fa-bullseye" style="color:var(--azul);"></i> Nueva meta de ahorro</button>
+  <button class="fab-opcion" onclick="cerrarFab();irA('p-calendario','')"><i class="fa-solid fa-calendar" style="color:var(--naranja);"></i> Ver calendario</button>
+</div>
+
+<!-- ===================== MODALES ===================== -->
+
+<!-- Modal Ingreso -->
+<div class="modal-overlay" id="modal-ingreso" onclick="cerrarModalPorOverlay(event,'modal-ingreso')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-ing-titulo">Registrar ingreso</h2>
+      <button class="modal-close" onclick="cerrarModal('modal-ingreso')">✕</button>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Monto (S/)</label>
+      <input class="form-input monto" type="number" id="ing-monto" placeholder="0.00" min="0" step="0.01">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Descripción</label>
+      <input class="form-input" type="text" id="ing-desc" placeholder="Ej: Sueldo, venta, freelance...">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Fecha</label>
+      <input class="form-input" type="date" id="ing-fecha">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Categoría</label>
+      <div class="cat-grid">
+        <button class="cat-btn sel" onclick="selCat(this,'ing')"><i class="fa-solid fa-briefcase"></i> Salario</button>
+        <button class="cat-btn" onclick="selCat(this,'ing')"><i class="fa-solid fa-laptop"></i> Freelance</button>
+        <button class="cat-btn" onclick="selCat(this,'ing')"><i class="fa-solid fa-chart-line"></i> Inversión</button>
+        <button class="cat-btn" onclick="selCat(this,'ing')"><i class="fa-solid fa-gift"></i> Bono</button>
+        <button class="cat-btn" onclick="selCat(this,'ing')"><i class="fa-solid fa-circle-plus"></i> Otro</button>
+      </div>
+    </div>
+    <input type="hidden" id="ing-edit-id">
+    <button class="btn-guardar" onclick="guardarIngreso()"><i class="fa-solid fa-check"></i> Guardar ingreso</button>
+  </div>
+</div>
+
+<!-- Modal Egreso -->
+<div class="modal-overlay" id="modal-egreso" onclick="cerrarModalPorOverlay(event,'modal-egreso')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-egr-titulo">Registrar gasto</h2>
+      <button class="modal-close" onclick="cerrarModal('modal-egreso')">✕</button>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Monto (S/)</label>
+      <input class="form-input monto" type="number" id="egr-monto" placeholder="0.00" min="0" step="0.01" style="border-color:var(--rojo);">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Descripción</label>
+      <input class="form-input" type="text" id="egr-desc" placeholder="¿En qué gastaste?">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Fecha</label>
+      <input class="form-input" type="date" id="egr-fecha">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Categoría</label>
+      <div class="cat-grid">
+        <button class="cat-btn sel" onclick="selCat(this,'egr')"><i class="fa-solid fa-utensils"></i> Alimentación</button>
+        <button class="cat-btn" onclick="selCat(this,'egr')"><i class="fa-solid fa-bus"></i> Transporte</button>
+        <button class="cat-btn" onclick="selCat(this,'egr')"><i class="fa-solid fa-heart-pulse"></i> Salud</button>
+        <button class="cat-btn" onclick="selCat(this,'egr')"><i class="fa-solid fa-book"></i> Educación</button>
+        <button class="cat-btn" onclick="selCat(this,'egr')"><i class="fa-solid fa-bolt"></i> Servicios</button>
+        <button class="cat-btn" onclick="selCat(this,'egr')"><i class="fa-solid fa-tv"></i> Entretenimiento</button>
+        <button class="cat-btn" onclick="selCat(this,'egr')"><i class="fa-solid fa-ellipsis"></i> Otros</button>
+      </div>
+    </div>
+    <input type="hidden" id="egr-edit-id">
+    <button class="btn-guardar rojo" onclick="guardarEgreso()"><i class="fa-solid fa-check"></i> Guardar gasto</button>
+  </div>
+</div>
+
+<!-- Modal Meta Ahorro -->
+<div class="modal-overlay" id="modal-meta" onclick="cerrarModalPorOverlay(event,'modal-meta')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Nueva meta de ahorro</h2>
+      <button class="modal-close" onclick="cerrarModal('modal-meta')">✕</button>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Nombre de la meta</label>
+      <input class="form-input" type="text" id="meta-nombre" placeholder="Ej: Laptop, Vacaciones, Fondo...">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Monto objetivo (S/)</label>
+      <input class="form-input monto" type="number" id="meta-objetivo" placeholder="0.00" min="0" step="0.01">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Fecha límite</label>
+      <input class="form-input" type="date" id="meta-fecha">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Ícono</label>
+      <div class="cat-grid">
+        <button class="cat-btn sel" onclick="selCat(this,'meta')">💻 Tecnología</button>
+        <button class="cat-btn" onclick="selCat(this,'meta')">✈️ Viaje</button>
+        <button class="cat-btn" onclick="selCat(this,'meta')">🏠 Hogar</button>
+        <button class="cat-btn" onclick="selCat(this,'meta')">📚 Educación</button>
+        <button class="cat-btn" onclick="selCat(this,'meta')">🚗 Vehículo</button>
+        <button class="cat-btn" onclick="selCat(this,'meta')">⭐ Otro</button>
+      </div>
+    </div>
+    <button class="btn-guardar" onclick="guardarMeta()"><i class="fa-solid fa-check"></i> Crear meta</button>
+  </div>
+</div>
+
+<!-- Modal Aporte -->
+<div class="modal-overlay" id="modal-aporte" onclick="cerrarModalPorOverlay(event,'modal-aporte')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-aporte-titulo">Registrar aporte</h2>
+      <button class="modal-close" onclick="cerrarModal('modal-aporte')">✕</button>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Monto del aporte (S/)</label>
+      <input class="form-input monto" type="number" id="aporte-monto" placeholder="0.00" min="0" step="0.01">
+    </div>
+    <input type="hidden" id="aporte-meta-id">
+    <button class="btn-guardar" onclick="guardarAporte()"><i class="fa-solid fa-plus"></i> Agregar aporte</button>
+  </div>
+</div>
+
+<!-- Modal Perfil -->
+<div class="modal-overlay" id="modal-perfil" onclick="cerrarModalPorOverlay(event,'modal-perfil')">
+  <div class="modal">
+    <div class="modal-header"><h2>Editar perfil</h2><button class="modal-close" onclick="cerrarModal('modal-perfil')">✕</button></div>
+    <div class="form-field"><label class="form-label">Nombre completo</label><input class="form-input" type="text" id="editar-nombre" placeholder="Tu nombre"></div>
+    <div class="form-field"><label class="form-label">Correo electrónico</label><input class="form-input" type="email" id="editar-email" placeholder="correo@ejemplo.com"></div>
+    <button class="btn-guardar" onclick="guardarPerfil()"><i class="fa-solid fa-check"></i> Guardar cambios</button>
+  </div>
+</div>
+
+<!-- Modal Moneda -->
+<div class="modal-overlay" id="modal-moneda" onclick="cerrarModalPorOverlay(event,'modal-moneda')">
+  <div class="modal">
+    <div class="modal-header"><h2>Seleccionar moneda</h2><button class="modal-close" onclick="cerrarModal('modal-moneda')">✕</button></div>
+    <div class="mov-list">
+      <div class="mov-item" onclick="selMoneda('S/','Sol peruano')"><div class="mov-info"><div class="mov-desc">🇵🇪 Sol peruano</div></div><div class="mov-monto pos">S/</div></div>
+      <div class="mov-item" onclick="selMoneda('$','Dólar americano')"><div class="mov-info"><div class="mov-desc">🇺🇸 Dólar americano</div></div><div class="mov-monto pos">$</div></div>
+      <div class="mov-item" onclick="selMoneda('€','Euro')"><div class="mov-info"><div class="mov-desc">🇪🇺 Euro</div></div><div class="mov-monto pos">€</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//  ESTADO GLOBAL
+// ============================================================
+let datos = JSON.parse(localStorage.getItem('ahorraYa') || '{}');
+if (!datos.ingresos)  datos.ingresos  = [];
+if (!datos.egresos)   datos.egresos   = [];
+if (!datos.metas)     datos.metas     = [];
+if (!datos.perfil)    datos.perfil    = {nombre:'Miguel Robles',email:'miguel@correo.com'};
+if (!datos.moneda)    datos.moneda    = {simbolo:'S/',nombre:'Sol peruano'};
+if (!datos.darkMode)  datos.darkMode  = false;
+
+let chartDonut = null;
+let chartBarras = null;
+let calMes = new Date().getMonth();
+let calAnio = new Date().getFullYear();
+let calFiltro = 'todos';
+let calDiaSeleccionado = null;
+let filtroIngActual = 'Todos';
+let filtroEgrActual = 'Todos';
+
+function guardar() { localStorage.setItem('ahorraYa', JSON.stringify(datos)); }
+function M(n) { return datos.moneda.simbolo + ' ' + Number(n).toFixed(2); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// ============================================================
+//  NAVEGACIÓN
+// ============================================================
+function irA(pantalla, navId) {
+  document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+  document.getElementById(pantalla).classList.add('activa');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('activo'));
+  if (navId) { const n = document.getElementById(navId); if(n) n.classList.add('activo'); }
+  cerrarFab();
+  if (pantalla === 'p-dashboard') renderDashboard();
+  if (pantalla === 'p-ingresos')  renderIngresos();
+  if (pantalla === 'p-egresos')   renderEgresos();
+  if (pantalla === 'p-ahorro')    renderMetas();
+  if (pantalla === 'p-calendario') renderCalendario();
+  if (pantalla === 'p-perfil')    renderPerfil();
+}
+
+// ============================================================
+//  FAB
+// ============================================================
+function toggleFab() {
+  const m = document.getElementById('fab-menu');
+  const ic = document.getElementById('fab-icon');
+  m.classList.toggle('visible');
+  ic.className = m.classList.contains('visible') ? 'fa-solid fa-xmark' : 'fa-solid fa-plus';
+}
+function cerrarFab() {
+  document.getElementById('fab-menu').classList.remove('visible');
+  document.getElementById('fab-icon').className = 'fa-solid fa-plus';
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#btn-fab') && !e.target.closest('#fab-menu')) cerrarFab();
+});
+
+// ============================================================
+//  MODALES
+// ============================================================
+function abrirModal(id) { document.getElementById(id).classList.add('visible'); }
+function cerrarModal(id) { document.getElementById(id).classList.remove('visible'); }
+function cerrarModalPorOverlay(e, id) { if(e.target === e.currentTarget) cerrarModal(id); }
+
+function abrirModalIngreso(editId) {
+  const hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('ing-edit-id').value = '';
+  document.getElementById('modal-ing-titulo').textContent = 'Registrar ingreso';
+  if (editId) {
+    const r = datos.ingresos.find(x=>x.id===editId);
+    if(r){
+      document.getElementById('ing-monto').value = r.monto;
+      document.getElementById('ing-desc').value = r.desc;
+      document.getElementById('ing-fecha').value = r.fecha;
+      document.getElementById('ing-edit-id').value = editId;
+      document.getElementById('modal-ing-titulo').textContent = 'Editar ingreso';
+      resaltarCat('modal-ingreso', r.cat);
+    }
+  } else {
+    document.getElementById('ing-monto').value = '';
+    document.getElementById('ing-desc').value = '';
+    document.getElementById('ing-fecha').value = hoy;
+    resetCats('modal-ingreso');
+  }
+  abrirModal('modal-ingreso');
+}
+
+function abrirModalEgreso(editId) {
+  const hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('egr-edit-id').value = '';
+  document.getElementById('modal-egr-titulo').textContent = 'Registrar gasto';
+  if (editId) {
+    const r = datos.egresos.find(x=>x.id===editId);
+    if(r){
+      document.getElementById('egr-monto').value = r.monto;
+      document.getElementById('egr-desc').value = r.desc;
+      document.getElementById('egr-fecha').value = r.fecha;
+      document.getElementById('egr-edit-id').value = editId;
+      document.getElementById('modal-egr-titulo').textContent = 'Editar gasto';
+      resaltarCat('modal-egreso', r.cat);
+    }
+  } else {
+    document.getElementById('egr-monto').value = '';
+    document.getElementById('egr-desc').value = '';
+    document.getElementById('egr-fecha').value = hoy;
+    resetCats('modal-egreso');
+  }
+  abrirModal('modal-egreso');
+}
+
+function abrirModalMeta() {
+  document.getElementById('meta-nombre').value='';
+  document.getElementById('meta-objetivo').value='';
+  document.getElementById('meta-fecha').value='';
+  resetCats('modal-meta');
+  abrirModal('modal-meta');
+}
+
+function abrirModalAporte(metaId, metaNombre) {
+  document.getElementById('aporte-meta-id').value = metaId;
+  document.getElementById('aporte-monto').value = '';
+  document.getElementById('modal-aporte-titulo').textContent = 'Aporte a: ' + metaNombre;
+  abrirModal('modal-aporte');
+}
+
+function abrirModalPerfil() {
+  document.getElementById('editar-nombre').value = datos.perfil.nombre;
+  document.getElementById('editar-email').value = datos.perfil.email;
+  abrirModal('modal-perfil');
+}
+
+function abrirModalMoneda() { abrirModal('modal-moneda'); }
+
+// ============================================================
+//  CATEGORÍAS
+// ============================================================
+function selCat(btn, grupo) {
+  btn.closest('.cat-grid').querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+function resetCats(modalId) {
+  document.getElementById(modalId).querySelectorAll('.cat-grid').forEach(g=>{
+    g.querySelectorAll('.cat-btn').forEach((b,i)=>{b.classList.toggle('sel',i===0);});
+  });
+}
+function resaltarCat(modalId, cat) {
+  document.getElementById(modalId).querySelectorAll('.cat-btn').forEach(b=>{
+    b.classList.toggle('sel', b.textContent.trim().includes(cat));
+  });
+}
+function getCatSeleccionada(modalId) {
+  const btn = document.querySelector('#'+modalId+' .cat-btn.sel');
+  if(!btn) return 'Otro';
+  return btn.textContent.replace(/[\u{1F300}-\u{1FFFF}]/gu,'').trim();
+}
+
+// ============================================================
+//  GUARDAR DATOS
+// ============================================================
+function guardarIngreso() {
+  const monto = parseFloat(document.getElementById('ing-monto').value);
+  const desc  = document.getElementById('ing-desc').value.trim();
+  const fecha = document.getElementById('ing-fecha').value;
+  const editId = document.getElementById('ing-edit-id').value;
+  if (!monto || monto<=0) { mostrarToast('Ingresa un monto válido'); return; }
+  if (!desc)  { mostrarToast('Agrega una descripción'); return; }
+  const cat = getCatSeleccionada('modal-ingreso');
+  if (editId) {
+    const r = datos.ingresos.find(x=>x.id===editId);
+    if(r){r.monto=monto;r.desc=desc;r.fecha=fecha;r.cat=cat;}
+    mostrarToast('Ingreso actualizado');
+  } else {
+    datos.ingresos.unshift({id:uid(),monto,desc,fecha,cat});
+    mostrarToast('Ingreso guardado ✓');
+  }
+  guardar(); cerrarModal('modal-ingreso');
+  renderIngresos(); renderDashboard();
+}
+
+function guardarEgreso() {
+  const monto = parseFloat(document.getElementById('egr-monto').value);
+  const desc  = document.getElementById('egr-desc').value.trim();
+  const fecha = document.getElementById('egr-fecha').value;
+  const editId = document.getElementById('egr-edit-id').value;
+  if (!monto || monto<=0) { mostrarToast('Ingresa un monto válido'); return; }
+  if (!desc)  { mostrarToast('Agrega una descripción'); return; }
+  const cat = getCatSeleccionada('modal-egreso');
+  if (editId) {
+    const r = datos.egresos.find(x=>x.id===editId);
+    if(r){r.monto=monto;r.desc=desc;r.fecha=fecha;r.cat=cat;}
+    mostrarToast('Gasto actualizado');
+  } else {
+    datos.egresos.unshift({id:uid(),monto,desc,fecha,cat});
+    mostrarToast('Gasto guardado ✓');
+  }
+  guardar(); cerrarModal('modal-egreso');
+  renderEgresos(); renderDashboard();
+}
+
+function guardarMeta() {
+  const nombre = document.getElementById('meta-nombre').value.trim();
+  const objetivo = parseFloat(document.getElementById('meta-objetivo').value);
+  const fecha = document.getElementById('meta-fecha').value;
+  if (!nombre) { mostrarToast('Agrega un nombre'); return; }
+  if (!objetivo || objetivo<=0) { mostrarToast('Ingresa el monto objetivo'); return; }
+  const icono = getCatSeleccionada('modal-meta');
+  datos.metas.push({id:uid(),nombre,objetivo,fecha,icono,aportes:[]});
+  guardar(); cerrarModal('modal-meta');
+  renderMetas(); renderDashboard();
+  mostrarToast('Meta creada ✓');
+}
+
+function guardarAporte() {
+  const monto = parseFloat(document.getElementById('aporte-monto').value);
+  const metaId = document.getElementById('aporte-meta-id').value;
+  if (!monto || monto<=0) { mostrarToast('Ingresa un monto válido'); return; }
+  const meta = datos.metas.find(m=>m.id===metaId);
+  if (meta) {
+    meta.aportes.push({monto, fecha: new Date().toISOString().split('T')[0]});
+    guardar(); cerrarModal('modal-aporte');
+    renderMetas(); renderDashboard();
+    const acum = meta.aportes.reduce((s,a)=>s+a.monto,0);
+    const pct = Math.min(100, Math.round(acum/meta.objetivo*100));
+    mostrarToast('Aporte registrado – ' + pct + '% alcanzado');
+  }
+}
+
+function eliminarIngreso(id) {
+  if(!confirm('¿Eliminar este ingreso?')) return;
+  datos.ingresos = datos.ingresos.filter(x=>x.id!==id);
+  guardar(); renderIngresos(); renderDashboard();
+  mostrarToast('Ingreso eliminado');
+}
+function eliminarEgreso(id) {
+  if(!confirm('¿Eliminar este gasto?')) return;
+  datos.egresos = datos.egresos.filter(x=>x.id!==id);
+  guardar(); renderEgresos(); renderDashboard();
+  mostrarToast('Gasto eliminado');
+}
+function eliminarMeta(id) {
+  if(!confirm('¿Eliminar esta meta?')) return;
+  datos.metas = datos.metas.filter(m=>m.id!==id);
+  guardar(); renderMetas(); renderDashboard();
+  mostrarToast('Meta eliminada');
+}
+
+function guardarPerfil() {
+  const nombre = document.getElementById('editar-nombre').value.trim();
+  const email  = document.getElementById('editar-email').value.trim();
+  if (!nombre) { mostrarToast('Ingresa tu nombre'); return; }
+  datos.perfil.nombre = nombre; datos.perfil.email = email;
+  guardar(); cerrarModal('modal-perfil'); renderPerfil();
+  mostrarToast('Perfil actualizado ✓');
+}
+
+function selMoneda(simbolo, nombre) {
+  datos.moneda = {simbolo, nombre};
+  guardar(); cerrarModal('modal-moneda');
+  document.getElementById('setting-moneda').textContent = simbolo + ' ' + nombre;
+  renderDashboard(); renderIngresos(); renderEgresos(); renderMetas();
+  mostrarToast('Moneda: ' + nombre);
+}
+
+// ============================================================
+//  DASHBOARD
+// ============================================================
+function renderDashboard() {
+  const hoy = new Date();
+  const mesActual = hoy.getMonth(); const anioActual = hoy.getFullYear();
+  const mesAnt = mesActual===0 ? 11 : mesActual-1;
+  const anioAnt = mesActual===0 ? anioActual-1 : anioActual;
+
+  const ingMes  = datos.ingresos.filter(x => { const d=new Date(x.fecha+'T00:00:00'); return d.getMonth()===mesActual && d.getFullYear()===anioActual; }).reduce((s,x)=>s+x.monto,0);
+  const egrMes  = datos.egresos.filter(x  => { const d=new Date(x.fecha+'T00:00:00'); return d.getMonth()===mesActual && d.getFullYear()===anioActual; }).reduce((s,x)=>s+x.monto,0);
+  const ingAnt  = datos.ingresos.filter(x => { const d=new Date(x.fecha+'T00:00:00'); return d.getMonth()===mesAnt && d.getFullYear()===anioAnt; }).reduce((s,x)=>s+x.monto,0);
+  const egrAnt  = datos.egresos.filter(x  => { const d=new Date(x.fecha+'T00:00:00'); return d.getMonth()===mesAnt && d.getFullYear()===anioAnt; }).reduce((s,x)=>s+x.monto,0);
+
+  const totalIng = datos.ingresos.reduce((s,x)=>s+x.monto,0);
+  const totalEgr = datos.egresos.reduce((s,x)=>s+x.monto,0);
+  const saldo    = totalIng - totalEgr;
+  const ahorro   = datos.metas.reduce((s,m)=>s+m.aportes.reduce((a,ap)=>a+ap.monto,0),0);
+
+  document.getElementById('dash-saldo').textContent = M(saldo);
+  document.getElementById('dash-ing').textContent   = M(ingMes);
+  document.getElementById('dash-egr').textContent   = M(egrMes);
+  document.getElementById('dash-ahorro').textContent = M(ahorro);
+
+  const saldoAnt = ingAnt - egrAnt;
+  const saldoAct = ingMes - egrMes;
+  if (saldoAnt !== 0) {
+    const variacion = ((saldoAct - saldoAnt) / Math.abs(saldoAnt) * 100).toFixed(1);
+    const el = document.getElementById('dash-variacion');
+    el.textContent = (variacion>=0?'+':'')+variacion+'%';
+    el.className = 'stat-val ' + (variacion>=0?'verde':'rojo');
+  } else {
+    document.getElementById('dash-variacion').textContent = '—';
+  }
+
+  // Meta principal
+  if (datos.metas.length > 0) {
+    const m = datos.metas[0];
+    const acum = m.aportes.reduce((s,a)=>s+a.monto,0);
+    const pct = Math.min(100, Math.round(acum/m.objetivo*100));
+    document.getElementById('dash-meta-pct').textContent = pct+'% – '+m.nombre;
+  }
+
+  // Mayor gasto por categoría
+  const catSumas = {};
+  datos.egresos.filter(x=>{const d=new Date(x.fecha+'T00:00:00');return d.getMonth()===mesActual&&d.getFullYear()===anioActual;})
+    .forEach(x=>{catSumas[x.cat]=(catSumas[x.cat]||0)+x.monto;});
+  const mayorCat = Object.entries(catSumas).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('dash-mayor-gasto').textContent = mayorCat ? mayorCat[0] : '—';
+
+  // Gráfico donut
+  const colores = ['#2E7D32','#EF5350','#1565C0','#FB8C00','#9C27B0','#00ACC1','#757575'];
+  const cats = Object.keys(catSumas);
+  const vals = cats.map(c=>catSumas[c]);
+  const totalEgrMes = vals.reduce((s,v)=>s+v,0);
+  document.getElementById('donut-total').textContent = M(totalEgrMes);
+
+  const leyEl = document.getElementById('leyenda-donut');
+  leyEl.innerHTML = cats.length ? cats.map((c,i)=>`
+    <div class="leyenda-item">
+      <div class="leyenda-dot" style="background:${colores[i%colores.length]}"></div>
+      ${c}<span>${totalEgrMes>0?Math.round(vals[i]/totalEgrMes*100):0}%</span>
+    </div>`).join('') : '<div style="color:var(--texto-sec);font-size:12px;">Sin gastos este mes</div>';
+
+  if (chartDonut) chartDonut.destroy();
+  const ctx = document.getElementById('chartDonut').getContext('2d');
+  chartDonut = new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels:cats.length?cats:['Sin datos'], datasets:[{data:cats.length?vals:[1],backgroundColor:cats.length?cats.map((_,i)=>colores[i%colores.length]):['#E0E0E0'],borderWidth:0}]},
+    options:{cutout:'70%',plugins:{legend:{display:false},tooltip:{enabled:cats.length>0}},animation:{duration:400}}
+  });
+
+  // Gráfico barras 6 meses
+  const meses6 = [];
+  const labels6 = [];
+  const nombMeses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  for(let i=5;i>=0;i--) {
+    const m = new Date(anioActual, mesActual-i, 1);
+    labels6.push(nombMeses[m.getMonth()]);
+    const im = datos.ingresos.filter(x=>{const d=new Date(x.fecha+'T00:00:00');return d.getMonth()===m.getMonth()&&d.getFullYear()===m.getFullYear();}).reduce((s,x)=>s+x.monto,0);
+    const em = datos.egresos.filter(x=>{const d=new Date(x.fecha+'T00:00:00');return d.getMonth()===m.getMonth()&&d.getFullYear()===m.getFullYear();}).reduce((s,x)=>s+x.monto,0);
+    meses6.push({ing:im,egr:em});
+  }
+
+  if (chartBarras) chartBarras.destroy();
+  const ctxB = document.getElementById('chartBarras').getContext('2d');
+  chartBarras = new Chart(ctxB, {
+    type:'bar',
+    data:{
+      labels:labels6,
+      datasets:[
+        {label:'Ingresos',data:meses6.map(x=>x.ing),backgroundColor:'#2E7D32',borderRadius:4},
+        {label:'Egresos', data:meses6.map(x=>x.egr),backgroundColor:'#EF5350',borderRadius:4}
+      ]
+    },
+    options:{responsive:true,plugins:{legend:{labels:{font:{size:11},boxWidth:12}}},scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10}},beginAtZero:true}},animation:{duration:400}}
+  });
+
+  // Últimos movimientos
+  const todos = [
+    ...datos.ingresos.map(x=>({...x,tipo:'ing'})),
+    ...datos.egresos.map(x=>({...x,tipo:'egr'}))
+  ].sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,5);
+  const cont = document.getElementById('dash-movimientos');
+  if (!todos.length) { cont.innerHTML='<div class="vacio"><i class="fa-solid fa-inbox"></i><p>Aún no hay movimientos</p></div>'; return; }
+  cont.innerHTML = todos.map(r=>movItemHTML(r, true)).join('');
+}
+
+// ============================================================
+//  INGRESOS / EGRESOS
+// ============================================================
+function filtrarMov(tipo, cat, btn) {
+  btn.closest('.chips').querySelectorAll('.chip').forEach(c=>c.classList.remove('activo'));
+  btn.classList.add('activo');
+  if(tipo==='ing') { filtroIngActual=cat; renderIngresos(); }
+  else             { filtroEgrActual=cat; renderEgresos(); }
+}
+
+function renderIngresos() {
+  const lista = filtroIngActual==='Todos' ? datos.ingresos : datos.ingresos.filter(x=>x.cat===filtroIngActual);
+  const cont = document.getElementById('lista-ingresos');
+  if(!lista.length){ cont.innerHTML='<div class="vacio"><i class="fa-solid fa-arrow-trend-up"></i><p>Sin ingresos registrados</p></div>'; return; }
+  cont.innerHTML = lista.map(r=>movItemHTML({...r,tipo:'ing'}, false)).join('');
+}
+
+function renderEgresos() {
+  const lista = filtroEgrActual==='Todos' ? datos.egresos : datos.egresos.filter(x=>x.cat===filtroEgrActual);
+  const cont = document.getElementById('lista-egresos');
+  if(!lista.length){ cont.innerHTML='<div class="vacio"><i class="fa-solid fa-arrow-trend-down"></i><p>Sin gastos registrados</p></div>'; return; }
+  cont.innerHTML = lista.map(r=>movItemHTML({...r,tipo:'egr'}, false)).join('');
+}
+
+const catIconos = {
+  'Salario':'fa-briefcase','Freelance':'fa-laptop','Inversión':'fa-chart-line','Bono':'fa-gift','Otro':'fa-circle-plus',
+  'Alimentación':'fa-utensils','Transporte':'fa-bus','Salud':'fa-heart-pulse','Educación':'fa-book',
+  'Servicios':'fa-bolt','Entretenimiento':'fa-tv','Otros':'fa-ellipsis'
+};
+const catColores = {
+  'Salario':'v','Freelance':'v','Inversión':'v','Bono':'v','Otro':'v',
+  'Alimentación':'n','Transporte':'a','Salud':'r','Educación':'a','Servicios':'a','Entretenimiento':'n','Otros':'v'
+};
+
+function movItemHTML(r, soloLectura) {
+  const ic  = catIconos[r.cat] || 'fa-circle';
+  const cls = catColores[r.cat] || 'v';
+  const pos = r.tipo==='ing';
+  const acciones = soloLectura ? '' :
+    `<div class="mov-acciones">
+      <button class="editar" onclick="${pos?'abrirModalIngreso':'abrirModalEgreso'}('${r.id}')"><i class="fa-solid fa-pen"></i></button>
+      <button class="borrar" onclick="${pos?'eliminarIngreso':'eliminarEgreso'}('${r.id}')"><i class="fa-solid fa-trash"></i></button>
+    </div>`;
+  return `<div class="mov-item">
+    <div class="mov-icono stat-icon ${cls}"><i class="fa-solid ${ic}"></i></div>
+    <div class="mov-info"><div class="mov-desc">${r.desc}</div><div class="mov-cat">${r.cat} · ${formatFecha(r.fecha)}</div></div>
+    <div class="mov-derecha"><div class="mov-monto ${pos?'pos':'neg'}">${pos?'+':'-'}${M(r.monto)}</div>${acciones}</div>
+  </div>`;
+}
+
+function formatFecha(f) {
+  const [y,m,d] = f.split('-');
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return d+' '+meses[parseInt(m)-1]+' '+y;
+}
+
+// ============================================================
+//  METAS
+// ============================================================
+const metaColores = {
+  'Tecnología':['var(--azul-claro)','var(--azul)'],
+  'Viaje':['#FFF3E0','var(--naranja)'],
+  'Hogar':['#F3E5F5','#7B1FA2'],
+  'Educación':['#E8F5E9','var(--verde)'],
+  'Vehículo':['#FCE4EC','#C2185B'],
+  'Otro':['#F5F5F5','#616161']
+};
+const metaEmojis = {'Tecnología':'💻','Viaje':'✈️','Hogar':'🏠','Educación':'📚','Vehículo':'🚗','Otro':'⭐'};
+
+function renderMetas() {
+  const cont = document.getElementById('lista-metas');
+  if(!datos.metas.length){ cont.innerHTML=''; return; }
+  cont.innerHTML = datos.metas.map(m=>{
+    const acum = m.aportes.reduce((s,a)=>s+a.monto,0);
+    const pct  = Math.min(100, Math.round(acum/m.objetivo*100));
+    const [bg,fg] = metaColores[m.icono]||['#E8F5E9','var(--verde)'];
+    const emoji = metaEmojis[m.icono]||'⭐';
+    const faltan = Math.max(0,m.objetivo-acum);
+    return `<div class="meta-card">
+      <div class="meta-header">
+        <div class="meta-icono-wrap">
+          <div class="meta-icono" style="background:${bg};color:${fg};font-size:20px;">${emoji}</div>
+          <div class="meta-nombre">${m.nombre}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge-pct" style="background:${bg};color:${fg};">${pct}%</span>
+          <button onclick="eliminarMeta('${m.id}')" style="background:none;border:none;color:var(--rojo);cursor:pointer;font-size:14px;"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${fg};"></div></div>
+      <div class="meta-amounts"><span>${M(acum)} ahorrado</span><span>Meta: ${M(m.objetivo)}</span></div>
+      ${m.fecha?`<div class="meta-vence">Vence: ${formatFecha(m.fecha)} · Faltan ${M(faltan)}</div>`:''}
+      <button class="btn-aporte" style="background:${fg};" onclick="abrirModalAporte('${m.id}','${m.nombre}')"><i class="fa-solid fa-plus"></i> Registrar aporte</button>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+//  CALENDARIO
+// ============================================================
+function renderCalendario() {
+  const nombMeses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-titulo').textContent = nombMeses[calMes]+' '+calAnio;
+  const hoy = new Date();
+  const primerDia = new Date(calAnio, calMes, 1).getDay();
+  const diasMes   = new Date(calAnio, calMes+1, 0).getDate();
+
+  const dias = ['D','L','M','X','J','V','S'];
+  let html = dias.map(d=>`<div class="cal-head">${d}</div>`).join('');
+  for(let i=0;i<primerDia;i++) html+=`<div class="cal-dia apagado"></div>`;
+  for(let d=1;d<=diasMes;d++) {
+    const fecha = calAnio+'-'+String(calMes+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const eHoy = d===hoy.getDate()&&calMes===hoy.getMonth()&&calAnio===hoy.getFullYear();
+    const tieneIng = datos.ingresos.some(x=>x.fecha===fecha);
+    const tieneEgr = datos.egresos.some(x=>x.fecha===fecha);
+    const tieneMov = (calFiltro==='todos'&&(tieneIng||tieneEgr))||(calFiltro==='ingresos'&&tieneIng)||(calFiltro==='egresos'&&tieneEgr);
+    html+=`<div class="cal-dia${eHoy?' hoy':''}${tieneMov?' con-mov':''}" onclick="selDia('${fecha}',this)">${d}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+
+  const hoyStr = hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-'+String(hoy.getDate()).padStart(2,'0');
+  if(!calDiaSeleccionado) mostrarDia(hoyStr);
+  else mostrarDia(calDiaSeleccionado);
+}
+
+function selDia(fecha, el) {
+  calDiaSeleccionado=fecha;
+  document.querySelectorAll('.cal-dia').forEach(d=>d.style.outline='');
+  el.style.outline='2px solid var(--verde)';
+  mostrarDia(fecha);
+}
+
+function mostrarDia(fecha) {
+  const [y,m,d] = fecha.split('-');
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  document.getElementById('cal-dia-titulo').textContent = `Movimientos del ${parseInt(d)} de ${meses[parseInt(m)-1]} de ${y}`;
+  const ings = (calFiltro==='egresos') ? [] : datos.ingresos.filter(x=>x.fecha===fecha);
+  const egrs = (calFiltro==='ingresos')? [] : datos.egresos.filter(x=>x.fecha===fecha);
+  const todos=[...ings.map(x=>({...x,tipo:'ing'})),...egrs.map(x=>({...x,tipo:'egr'}))];
+  const cont = document.getElementById('cal-movimientos');
+  if(!todos.length){ cont.innerHTML='<div class="vacio"><i class="fa-regular fa-calendar-xmark"></i><p>Sin movimientos este día</p></div>'; return; }
+  cont.innerHTML=todos.map(r=>movItemHTML(r,true)).join('');
+}
+
+function cambiarMes(dir) { calMes+=dir; if(calMes>11){calMes=0;calAnio++;}else if(calMes<0){calMes=11;calAnio--;} calDiaSeleccionado=null; renderCalendario(); }
+
+function filtroCalendario(tipo, btn) {
+  calFiltro=tipo;
+  document.querySelectorAll('.filtro-btn').forEach(b=>b.classList.remove('activo'));
+  btn.classList.add('activo');
+  renderCalendario();
+}
+
+// ============================================================
+//  PERFIL
+// ============================================================
+function renderPerfil() {
+  document.getElementById('perfil-nombre').textContent = datos.perfil.nombre;
+  document.getElementById('perfil-email').textContent  = datos.perfil.email;
+  const iniciales = datos.perfil.nombre.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('perfil-iniciales').textContent = iniciales;
+  document.getElementById('setting-moneda').textContent = datos.moneda.simbolo+' '+datos.moneda.nombre;
+  if(datos.darkMode) document.getElementById('toggle-dark').classList.add('on');
+  else document.getElementById('toggle-dark').classList.remove('on');
+}
+
+function toggleDarkMode() {
+  datos.darkMode = !datos.darkMode;
+  guardar();
+  aplicarDarkMode();
+}
+
+function aplicarDarkMode() {
+  if(datos.darkMode) {
+    document.body.style.cssText='--verde:#4CAF50;--verde-claro:#81C784;--verde-muy-claro:#1B5E20;--rojo:#EF5350;--rojo-claro:#4A0A0A;--azul:#42A5F5;--azul-claro:#0D2B4B;--naranja:#FFA726;--naranja-claro:#3E1A00;--gris:#1E1E1E;--gris-medio:#333;--gris-texto:#AAAAAA;--blanco:#2C2C2C;--texto:#FFFFFF;--texto-sec:#AAAAAA;';
+    document.getElementById('toggle-dark').classList.add('on');
+  } else {
+    document.body.style.cssText='';
+    document.getElementById('toggle-dark').classList.remove('on');
+  }
+}
+
+// ============================================================
+//  EXPORTAR
+// ============================================================
+function exportarPDF() {
+  let contenido = 'AhorraYa – Reporte Financiero\n\n';
+  contenido += 'INGRESOS:\n';
+  datos.ingresos.forEach(x=>contenido+=`${x.fecha} | ${x.cat} | ${x.desc} | +${M(x.monto)}\n`);
+  contenido += '\nEGRESOS:\n';
+  datos.egresos.forEach(x=>contenido+=`${x.fecha} | ${x.cat} | ${x.desc} | -${M(x.monto)}\n`);
+  const total = datos.ingresos.reduce((s,x)=>s+x.monto,0)-datos.egresos.reduce((s,x)=>s+x.monto,0);
+  contenido += `\nSaldo total: ${M(total)}`;
+  descargar('AhorraYa_Reporte.txt', contenido);
+  mostrarToast('Reporte generado ✓');
+}
+
+function exportarExcel() {
+  let csv = 'Fecha,Tipo,Categoría,Descripción,Monto\n';
+  datos.ingresos.forEach(x=>csv+=`${x.fecha},Ingreso,${x.cat},"${x.desc}",${x.monto}\n`);
+  datos.egresos.forEach(x=>csv+=`${x.fecha},Egreso,${x.cat},"${x.desc}",-${x.monto}\n`);
+  descargar('AhorraYa_Datos.csv', csv);
+  mostrarToast('Archivo CSV generado ✓');
+}
+
+function descargar(nombre, contenido) {
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(contenido);
+  a.download = nombre; a.click();
+}
+
+// ============================================================
+//  TOAST
+// ============================================================
+function mostrarToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+aplicarDarkMode();
+iniciarApp();
+</script>
+
+<!-- ===================== PANTALLA LOGIN ===================== -->
+<div id="p-login" style="
+  display:none;position:fixed;inset:0;z-index:1000;
+  background:var(--verde);flex-direction:column;
+  align-items:center;justify-content:center;padding:32px 24px;">
+  <div style="text-align:center;margin-bottom:40px;">
+    <div style="font-size:64px;margin-bottom:12px;">💰</div>
+    <div style="font-size:28px;font-weight:800;color:#fff;letter-spacing:-0.5px;">AhorraYa</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:4px;">Control financiero personal</div>
+  </div>
+  <div id="login-box" style="background:#fff;border-radius:20px;padding:24px;width:100%;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.2);">
+    <div id="login-form">
+      <div style="font-size:17px;font-weight:700;color:var(--texto);margin-bottom:18px;text-align:center;">Bienvenido</div>
+      <div class="form-field">
+        <label class="form-label">Nombre</label>
+        <input class="form-input" type="text" id="login-nombre" placeholder="Tu nombre completo">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Correo</label>
+        <input class="form-input" type="email" id="login-email" placeholder="correo@ejemplo.com">
+      </div>
+      <div class="form-field">
+        <label class="form-label">PIN de 4 dígitos</label>
+        <input class="form-input" type="password" id="login-pin" placeholder="••••" maxlength="4" inputmode="numeric" style="letter-spacing:8px;font-size:20px;text-align:center;">
+      </div>
+      <button class="btn-guardar" onclick="registrarUsuario()" style="margin-top:8px;">
+        <i class="fa-solid fa-right-to-bracket"></i> Entrar a mi cuenta
+      </button>
+    </div>
+    <div id="pin-form" style="display:none;">
+      <div style="font-size:15px;font-weight:600;color:var(--texto);margin-bottom:6px;text-align:center;" id="pin-saludo">Hola de nuevo 👋</div>
+      <div style="font-size:12px;color:var(--texto-sec);text-align:center;margin-bottom:18px;" id="pin-email-show"></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;" id="pin-dots">
+        <div style="height:14px;width:14px;border-radius:50%;background:#E0E0E0;margin:0 auto;transition:background .15s;" id="dot-0"></div>
+        <div style="height:14px;width:14px;border-radius:50%;background:#E0E0E0;margin:0 auto;transition:background .15s;" id="dot-1"></div>
+        <div style="height:14px;width:14px;border-radius:50%;background:#E0E0E0;margin:0 auto;transition:background .15s;" id="dot-2"></div>
+        <div style="height:14px;width:14px;border-radius:50%;background:#E0E0E0;margin:0 auto;transition:background .15s;" id="dot-3"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="numpad">
+        <button class="numpad-btn" onclick="pinPresionar('1')">1</button>
+        <button class="numpad-btn" onclick="pinPresionar('2')">2</button>
+        <button class="numpad-btn" onclick="pinPresionar('3')">3</button>
+        <button class="numpad-btn" onclick="pinPresionar('4')">4</button>
+        <button class="numpad-btn" onclick="pinPresionar('5')">5</button>
+        <button class="numpad-btn" onclick="pinPresionar('6')">6</button>
+        <button class="numpad-btn" onclick="pinPresionar('7')">7</button>
+        <button class="numpad-btn" onclick="pinPresionar('8')">8</button>
+        <button class="numpad-btn" onclick="pinPresionar('9')">9</button>
+        <button class="numpad-btn" onclick="pinLimpiar()" style="background:#FFEBEE;color:var(--rojo);">⌫</button>
+        <button class="numpad-btn" onclick="pinPresionar('0')">0</button>
+        <button class="numpad-btn" onclick="pinLimpiarTodo()" style="font-size:11px;color:var(--texto-sec);">Borrar</button>
+      </div>
+      <button style="width:100%;background:none;border:none;color:var(--texto-sec);font-size:12px;margin-top:14px;cursor:pointer;font-family:inherit;" onclick="cerrarSesion()">
+        No soy yo → cambiar cuenta
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PANTALLA BUSCAR ===================== -->
+<div id="p-buscar" class="pantalla">
+  <div class="topbar">
+    <div class="topbar-row">
+      <h1>Búsqueda</h1>
+    </div>
+    <div style="margin-top:10px;position:relative;">
+      <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.6);font-size:14px;"></i>
+      <input id="buscar-input" type="text" placeholder="Buscar por descripción o categoría..."
+        style="width:100%;padding:10px 12px 10px 36px;border-radius:10px;border:none;background:rgba(255,255,255,.2);color:#fff;font-size:14px;font-family:inherit;outline:none;"
+        oninput="ejecutarBusqueda()" placeholder-color="white">
+    </div>
+  </div>
+  <div class="seccion">
+    <div class="chips">
+      <button class="chip activo" onclick="filtrarBusqueda('todos',this)">Todos</button>
+      <button class="chip" onclick="filtrarBusqueda('ingresos',this)">Solo ingresos</button>
+      <button class="chip" onclick="filtrarBusqueda('egresos',this)">Solo egresos</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <select id="buscar-mes" class="form-input" style="flex:1;min-width:120px;padding:8px 10px;font-size:12px;" onchange="ejecutarBusqueda()">
+        <option value="">Todos los meses</option>
+        <option value="01">Enero</option><option value="02">Febrero</option>
+        <option value="03">Marzo</option><option value="04">Abril</option>
+        <option value="05">Mayo</option><option value="06">Junio</option>
+        <option value="07">Julio</option><option value="08">Agosto</option>
+        <option value="09">Septiembre</option><option value="10">Octubre</option>
+        <option value="11">Noviembre</option><option value="12">Diciembre</option>
+      </select>
+      <select id="buscar-orden" class="form-input" style="flex:1;min-width:120px;padding:8px 10px;font-size:12px;" onchange="ejecutarBusqueda()">
+        <option value="fecha-desc">Más reciente primero</option>
+        <option value="fecha-asc">Más antiguo primero</option>
+        <option value="monto-desc">Mayor monto primero</option>
+        <option value="monto-asc">Menor monto primero</option>
+      </select>
+    </div>
+    <div id="buscar-resumen" style="font-size:12px;color:var(--texto-sec);margin-bottom:10px;"></div>
+    <div class="mov-list" id="buscar-resultados"></div>
+  </div>
+</div>
+
+<!-- ===================== PANTALLA REPORTES ===================== -->
+<div id="p-reportes" class="pantalla">
+  <div class="topbar"><div class="topbar-row"><h1>Reportes</h1></div></div>
+  <div class="seccion">
+    <div class="chips" id="chips-reporte">
+      <button class="chip activo" onclick="cambiarReporte('mensual',this)">Mensual</button>
+      <button class="chip" onclick="cambiarReporte('anual',this)">Anual</button>
+      <button class="chip" onclick="cambiarReporte('categorias',this)">Categorías</button>
+    </div>
+
+    <!-- REPORTE MENSUAL -->
+    <div id="rep-mensual">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <button onclick="cambiarMesReporte(-1)" style="background:none;border:none;font-size:16px;color:var(--verde);cursor:pointer;padding:4px 8px;"><i class="fa-solid fa-chevron-left"></i></button>
+        <div style="font-size:15px;font-weight:700;" id="rep-mes-titulo"></div>
+        <button onclick="cambiarMesReporte(1)" style="background:none;border:none;font-size:16px;color:var(--verde);cursor:pointer;padding:4px 8px;"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+      <div class="stats-grid" id="rep-mes-stats"></div>
+      <div class="chart-card" style="margin-top:4px;">
+        <h3>Gastos por categoría</h3>
+        <canvas id="rep-chart-donut" height="180"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Movimientos del mes</h3>
+        <div class="mov-list" id="rep-mes-movimientos"></div>
+      </div>
+    </div>
+
+    <!-- REPORTE ANUAL -->
+    <div id="rep-anual" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <button onclick="cambiarAnioReporte(-1)" style="background:none;border:none;font-size:16px;color:var(--verde);cursor:pointer;padding:4px 8px;"><i class="fa-solid fa-chevron-left"></i></button>
+        <div style="font-size:15px;font-weight:700;" id="rep-anio-titulo"></div>
+        <button onclick="cambiarAnioReporte(1)" style="background:none;border:none;font-size:16px;color:var(--verde);cursor:pointer;padding:4px 8px;"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+      <div class="chart-card">
+        <h3>Ingresos vs Egresos por mes</h3>
+        <canvas id="rep-chart-anual" height="180"></canvas>
+      </div>
+      <div class="stats-grid" id="rep-anio-stats" style="margin-top:4px;"></div>
+    </div>
+
+    <!-- REPORTE CATEGORÍAS -->
+    <div id="rep-categorias" style="display:none;">
+      <div class="chart-card">
+        <h3>Distribución de gastos</h3>
+        <canvas id="rep-chart-cats" height="200"></canvas>
+      </div>
+      <div id="rep-cats-lista" style="margin-top:4px;"></div>
+    </div>
+
+    <div class="export-row" style="margin-top:14px;">
+      <button class="btn-export pdf" onclick="exportarPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+      <button class="btn-export excel" onclick="exportarExcel()"><i class="fa-solid fa-file-excel"></i> Excel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PANTALLA RECORDATORIOS ===================== -->
+<div id="p-recordatorios" class="pantalla">
+  <div class="topbar">
+    <div class="topbar-row">
+      <h1>Recordatorios</h1>
+      <div class="topbar-icons">
+        <button onclick="abrirModalRecordatorio()"><i class="fa-solid fa-plus"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="seccion">
+    <div class="chart-card" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);border:none;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="font-size:32px;">🔔</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--verde);">Recordatorios activos</div>
+          <div style="font-size:12px;color:var(--texto-sec);" id="rec-cuenta">Cargando...</div>
+        </div>
+      </div>
+    </div>
+    <div class="seccion-titulo">Tus recordatorios</div>
+    <div id="lista-recordatorios"></div>
+    <button class="empty-btn" onclick="abrirModalRecordatorio()">
+      <i class="fa-solid fa-plus"></i> Nuevo recordatorio
+    </button>
+  </div>
+</div>
+
+<!-- ===================== PANTALLA IA ===================== -->
+<div id="p-ia" class="pantalla">
+  <div class="topbar"><div class="topbar-row"><h1><i class="fa-solid fa-robot" style="margin-right:6px;"></i>Asesor IA</h1></div></div>
+  <div class="seccion">
+    <div class="chart-card" style="background:linear-gradient(135deg,#1B5E20,#2E7D32);border:none;padding:20px;">
+      <div style="color:#fff;font-size:15px;font-weight:700;margin-bottom:6px;">🤖 Análisis financiero inteligente</div>
+      <div style="color:rgba(255,255,255,.8);font-size:13px;">Basado en tus hábitos de los últimos meses</div>
+    </div>
+
+    <div class="seccion-titulo" style="margin-top:4px;">Resumen del mes</div>
+    <div id="ia-resumen"></div>
+
+    <div class="seccion-titulo">Sugerencias de ahorro</div>
+    <div id="ia-sugerencias"></div>
+
+    <div class="seccion-titulo">Alertas</div>
+    <div id="ia-alertas"></div>
+
+    <div class="seccion-titulo">Proyección de ahorro</div>
+    <div class="chart-card">
+      <h3>Si sigues así, en 6 meses tendrás:</h3>
+      <canvas id="ia-chart-proyeccion" height="140"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL RECORDATORIO ===================== -->
+<div class="modal-overlay" id="modal-recordatorio" onclick="cerrarModalPorOverlay(event,'modal-recordatorio')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Nuevo recordatorio</h2>
+      <button class="modal-close" onclick="cerrarModal('modal-recordatorio')">✕</button>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Título</label>
+      <input class="form-input" type="text" id="rec-titulo" placeholder="Ej: Pagar luz, Registrar gastos...">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Tipo</label>
+      <div class="cat-grid">
+        <button class="cat-btn sel" onclick="selCat(this,'rec')">📅 Diario</button>
+        <button class="cat-btn" onclick="selCat(this,'rec')">📆 Semanal</button>
+        <button class="cat-btn" onclick="selCat(this,'rec')">🗓️ Mensual</button>
+        <button class="cat-btn" onclick="selCat(this,'rec')">⚡ Una vez</button>
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Hora</label>
+      <input class="form-input" type="time" id="rec-hora" value="08:00">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Nota (opcional)</label>
+      <input class="form-input" type="text" id="rec-nota" placeholder="Descripción adicional...">
+    </div>
+    <button class="btn-guardar" onclick="guardarRecordatorio()"><i class="fa-solid fa-bell"></i> Guardar recordatorio</button>
+  </div>
+</div>
+
+<style>
+/* ===== ESTILOS ADICIONALES ===== */
+.numpad-btn {
+  padding:14px;border-radius:12px;border:1.5px solid var(--gris-medio);
+  background:var(--gris);font-size:18px;font-weight:600;cursor:pointer;
+  font-family:inherit;color:var(--texto);transition:background .1s;
+}
+.numpad-btn:active{background:var(--verde-muy-claro);border-color:var(--verde);}
+#p-login { display:flex; }
+
+.ia-card {
+  background:var(--blanco);border-radius:var(--radio);padding:14px;
+  box-shadow:var(--sombra);margin-bottom:10px;
+  display:flex;align-items:flex-start;gap:12px;
+}
+.ia-card-icon{font-size:24px;flex-shrink:0;margin-top:2px;}
+.ia-card-titulo{font-size:13px;font-weight:700;color:var(--texto);margin-bottom:3px;}
+.ia-card-desc{font-size:12px;color:var(--texto-sec);line-height:1.5;}
+.ia-card.alerta{border-left:4px solid var(--rojo);}
+.ia-card.sugerencia{border-left:4px solid var(--verde);}
+.ia-card.info{border-left:4px solid var(--azul);}
+
+.rec-item{
+  background:var(--blanco);border-radius:var(--radio);padding:13px 14px;
+  display:flex;align-items:center;gap:12px;box-shadow:var(--sombra);margin-bottom:8px;
+}
+.rec-icono{font-size:22px;width:40px;text-align:center;}
+.rec-info{flex:1;}
+.rec-titulo{font-size:13px;font-weight:600;color:var(--texto);}
+.rec-detalle{font-size:11px;color:var(--texto-sec);margin-top:2px;}
+.rec-toggle{cursor:pointer;}
+
+.rep-stat{
+  background:var(--blanco);border-radius:var(--radio);padding:12px 14px;
+  box-shadow:var(--sombra);text-align:center;
+}
+.rep-stat .lbl{font-size:11px;color:var(--texto-sec);margin-bottom:4px;}
+.rep-stat .val{font-size:18px;font-weight:700;}
+
+input[placeholder]{color:rgba(255,255,255,.6);}
+#buscar-input::placeholder{color:rgba(255,255,255,.6);}
+</style>
+
+<script>
+// ============================================================
+//  VARIABLES ADICIONALES
+// ============================================================
+let pinActual = '';
+let repMes = new Date().getMonth();
+let repAnio = new Date().getFullYear();
+let repAnioSel = new Date().getFullYear();
+let repVista = 'mensual';
+let buscarTipo = 'todos';
+let chartRepDonut = null, chartRepAnual = null, chartRepCats = null, chartIAProyeccion = null;
+
+// ============================================================
+//  INICIO DE APP (LOGIN)
+// ============================================================
+function iniciarApp() {
+  aplicarDarkMode();
+  if (datos.sesion && datos.sesion.activa) {
+    ocultarLogin();
+    renderDashboard();
+  } else if (datos.perfil && datos.perfil.nombre && datos.perfil.pin) {
+    mostrarPinForm();
+  } else {
+    mostrarLoginForm();
+  }
+  // Configurar nav extra
+  configurarNavExtra();
+}
+
+function mostrarLoginForm() {
+  document.getElementById('login-form').style.display = 'block';
+  document.getElementById('pin-form').style.display = 'none';
+  document.getElementById('p-login').style.display = 'flex';
+}
+
+function mostrarPinForm() {
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('pin-form').style.display = 'block';
+  document.getElementById('p-login').style.display = 'flex';
+  document.getElementById('pin-saludo').textContent = '¡Hola, ' + datos.perfil.nombre.split(' ')[0] + '! 👋';
+  document.getElementById('pin-email-show').textContent = datos.perfil.email || '';
+  pinActual = '';
+  actualizarDots();
+}
+
+function ocultarLogin() {
+  document.getElementById('p-login').style.display = 'none';
+}
+
+function registrarUsuario() {
+  const nombre = document.getElementById('login-nombre').value.trim();
+  const email  = document.getElementById('login-email').value.trim();
+  const pin    = document.getElementById('login-pin').value.trim();
+  if (!nombre) { mostrarToast('Ingresa tu nombre'); return; }
+  if (pin.length !== 4 || !/^\d+$/.test(pin)) { mostrarToast('El PIN debe tener 4 dígitos'); return; }
+  datos.perfil = { nombre, email, pin };
+  datos.sesion = { activa: true };
+  guardar();
+  ocultarLogin();
+  renderDashboard();
+  mostrarToast('¡Bienvenido, ' + nombre.split(' ')[0] + '! 🎉');
+}
+
+function pinPresionar(num) {
+  if (pinActual.length >= 4) return;
+  pinActual += num;
+  actualizarDots();
+  if (pinActual.length === 4) {
+    setTimeout(() => verificarPin(), 200);
+  }
+}
+
+function pinLimpiar() {
+  pinActual = pinActual.slice(0, -1);
+  actualizarDots();
+}
+
+function pinLimpiarTodo() {
+  pinActual = '';
+  actualizarDots();
+}
+
+function actualizarDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('dot-' + i);
+    if (dot) dot.style.background = i < pinActual.length ? '#2E7D32' : '#E0E0E0';
+  }
+}
+
+function verificarPin() {
+  if (pinActual === datos.perfil.pin) {
+    datos.sesion = { activa: true };
+    guardar();
+    ocultarLogin();
+    renderDashboard();
+    mostrarToast('¡Bienvenido! ✓');
+  } else {
+    // Sacudir efecto de error
+    const box = document.getElementById('pin-dots');
+    box.style.animation = 'shake .3s ease';
+    setTimeout(() => { box.style.animation = ''; pinActual = ''; actualizarDots(); }, 400);
+    mostrarToast('PIN incorrecto');
+  }
+}
+
+function cerrarSesion() {
+  datos.sesion = { activa: false };
+  guardar();
+  mostrarLoginForm();
+}
+
+// ============================================================
+//  NAVEGACIÓN EXTRA (BUSCAR, REPORTES, IA, RECORDATORIOS)
+// ============================================================
+function configurarNavExtra() {
+  // Reemplazar ícono de perfil con menú más (barra superior del dashboard)
+}
+
+// Extender irA para las nuevas pantallas
+const _irAOriginal = irA;
+window.irA = function(pantalla, navId) {
+  _irAOriginal(pantalla, navId);
+  if (pantalla === 'p-buscar')       { renderBusqueda(); }
+  if (pantalla === 'p-reportes')     { renderReportes(); }
+  if (pantalla === 'p-recordatorios'){ renderRecordatorios(); }
+  if (pantalla === 'p-ia')           { renderIA(); }
+};
+
+// ============================================================
+//  BÚSQUEDA AVANZADA
+// ============================================================
+function renderBusqueda() {
+  ejecutarBusqueda();
+}
+
+function filtrarBusqueda(tipo, btn) {
+  buscarTipo = tipo;
+  btn.closest('.chips').querySelectorAll('.chip').forEach(c => c.classList.remove('activo'));
+  btn.classList.add('activo');
+  ejecutarBusqueda();
+}
+
+function ejecutarBusqueda() {
+  const q     = (document.getElementById('buscar-input').value || '').toLowerCase().trim();
+  const mes   = document.getElementById('buscar-mes').value;
+  const orden = document.getElementById('buscar-orden').value;
+
+  let ings = buscarTipo !== 'egresos' ? datos.ingresos.map(x => ({...x, tipo:'ing'})) : [];
+  let egrs = buscarTipo !== 'ingresos' ? datos.egresos.map(x => ({...x, tipo:'egr'})) : [];
+  let todos = [...ings, ...egrs];
+
+  if (q) {
+    todos = todos.filter(x =>
+      x.desc.toLowerCase().includes(q) ||
+      x.cat.toLowerCase().includes(q)
+    );
+  }
+  if (mes) {
+    todos = todos.filter(x => x.fecha && x.fecha.split('-')[1] === mes);
+  }
+
+  // Ordenar
+  todos.sort((a, b) => {
+    if (orden === 'fecha-desc') return b.fecha.localeCompare(a.fecha);
+    if (orden === 'fecha-asc')  return a.fecha.localeCompare(b.fecha);
+    if (orden === 'monto-desc') return b.monto - a.monto;
+    if (orden === 'monto-asc')  return a.monto - b.monto;
+    return 0;
+  });
+
+  const totalEncontrado = todos.reduce((s, x) => s + (x.tipo === 'ing' ? x.monto : -x.monto), 0);
+  const resEl = document.getElementById('buscar-resumen');
+  resEl.textContent = todos.length
+    ? `${todos.length} resultado${todos.length > 1 ? 's' : ''} · Balance: ${M(totalEncontrado)}`
+    : '';
+
+  const cont = document.getElementById('buscar-resultados');
+  if (!todos.length) {
+    cont.innerHTML = '<div class="vacio"><i class="fa-solid fa-magnifying-glass"></i><p>Sin resultados. Prueba otro término.</p></div>';
+    return;
+  }
+  cont.innerHTML = todos.map(r => movItemHTML(r, true)).join('');
+}
+
+// ============================================================
+//  REPORTES
+// ============================================================
+function cambiarReporte(tipo, btn) {
+  repVista = tipo;
+  btn.closest('.chips').querySelectorAll('.chip').forEach(c => c.classList.remove('activo'));
+  btn.classList.add('activo');
+  document.getElementById('rep-mensual').style.display   = tipo === 'mensual'    ? 'block' : 'none';
+  document.getElementById('rep-anual').style.display     = tipo === 'anual'      ? 'block' : 'none';
+  document.getElementById('rep-categorias').style.display= tipo === 'categorias' ? 'block' : 'none';
+  renderReportes();
+}
+
+function renderReportes() {
+  if (repVista === 'mensual')    renderReporteMensual();
+  if (repVista === 'anual')      renderReporteAnual();
+  if (repVista === 'categorias') renderReporteCategorias();
+}
+
+function cambiarMesReporte(dir) {
+  repMes += dir;
+  if (repMes > 11) { repMes = 0; repAnio++; }
+  if (repMes < 0)  { repMes = 11; repAnio--; }
+  renderReporteMensual();
+}
+
+function cambiarAnioReporte(dir) {
+  repAnioSel += dir;
+  renderReporteAnual();
+}
+
+function renderReporteMensual() {
+  const nombMeses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('rep-mes-titulo').textContent = nombMeses[repMes] + ' ' + repAnio;
+
+  const ingsMes = datos.ingresos.filter(x => {
+    const d = new Date(x.fecha + 'T00:00:00');
+    return d.getMonth() === repMes && d.getFullYear() === repAnio;
+  });
+  const egrsMes = datos.egresos.filter(x => {
+    const d = new Date(x.fecha + 'T00:00:00');
+    return d.getMonth() === repMes && d.getFullYear() === repAnio;
+  });
+
+  const totalIng = ingsMes.reduce((s,x)=>s+x.monto,0);
+  const totalEgr = egrsMes.reduce((s,x)=>s+x.monto,0);
+  const saldo = totalIng - totalEgr;
+  const tasa  = totalIng > 0 ? Math.round((saldo/totalIng)*100) : 0;
+
+  document.getElementById('rep-mes-stats').innerHTML = `
+    <div class="rep-stat"><div class="lbl">Ingresos</div><div class="val verde">${M(totalIng)}</div></div>
+    <div class="rep-stat"><div class="lbl">Egresos</div><div class="val rojo">${M(totalEgr)}</div></div>
+    <div class="rep-stat"><div class="lbl">Saldo neto</div><div class="val ${saldo>=0?'verde':'rojo'}">${M(saldo)}</div></div>
+    <div class="rep-stat"><div class="lbl">Tasa de ahorro</div><div class="val">${tasa}%</div></div>
+  `;
+
+  // Donut categorías
+  const catSumas = {};
+  egrsMes.forEach(x => { catSumas[x.cat] = (catSumas[x.cat]||0) + x.monto; });
+  const colores = ['#2E7D32','#EF5350','#1565C0','#FB8C00','#9C27B0','#00ACC1','#757575'];
+  const cats = Object.keys(catSumas);
+  const vals = cats.map(c => catSumas[c]);
+
+  if (chartRepDonut) chartRepDonut.destroy();
+  const ctx = document.getElementById('rep-chart-donut').getContext('2d');
+  chartRepDonut = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: cats.length ? cats : ['Sin datos'],
+      datasets: [{
+        data: cats.length ? vals : [1],
+        backgroundColor: cats.length ? cats.map((_,i)=>colores[i%colores.length]) : ['#E0E0E0'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      cutout: '65%',
+      plugins: {
+        legend: { position:'bottom', labels:{ font:{size:11}, boxWidth:12 } }
+      }
+    }
+  });
+
+  // Lista movimientos
+  const todos = [
+    ...ingsMes.map(x=>({...x,tipo:'ing'})),
+    ...egrsMes.map(x=>({...x,tipo:'egr'}))
+  ].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const cont = document.getElementById('rep-mes-movimientos');
+  cont.innerHTML = todos.length
+    ? todos.map(r=>movItemHTML(r,true)).join('')
+    : '<div class="vacio"><i class="fa-solid fa-inbox"></i><p>Sin movimientos este mes</p></div>';
+}
+
+function renderReporteAnual() {
+  document.getElementById('rep-anio-titulo').textContent = 'Año ' + repAnioSel;
+  const nombMeses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const ingsA = [], egrsA = [];
+  let totalIngA=0, totalEgrA=0;
+  for (let m=0; m<12; m++) {
+    const im = datos.ingresos.filter(x=>{const d=new Date(x.fecha+'T00:00:00');return d.getMonth()===m&&d.getFullYear()===repAnioSel;}).reduce((s,x)=>s+x.monto,0);
+    const em = datos.egresos.filter(x=>{const d=new Date(x.fecha+'T00:00:00');return d.getMonth()===m&&d.getFullYear()===repAnioSel;}).reduce((s,x)=>s+x.monto,0);
+    ingsA.push(im); egrsA.push(em);
+    totalIngA+=im; totalEgrA+=em;
+  }
+  if (chartRepAnual) chartRepAnual.destroy();
+  const ctx = document.getElementById('rep-chart-anual').getContext('2d');
+  chartRepAnual = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels: nombMeses,
+      datasets:[
+        {label:'Ingresos',data:ingsA,backgroundColor:'#2E7D32',borderRadius:4},
+        {label:'Egresos', data:egrsA,backgroundColor:'#EF5350',borderRadius:4}
+      ]
+    },
+    options:{responsive:true,plugins:{legend:{labels:{font:{size:11},boxWidth:12}}},scales:{x:{ticks:{font:{size:10}}},y:{beginAtZero:true,ticks:{font:{size:10}}}}}
+  });
+
+  const saldoAnual = totalIngA - totalEgrA;
+  const ahorroAnual = datos.metas.reduce((s,m)=>{
+    return s + m.aportes.filter(a=>a.fecha&&a.fecha.startsWith(repAnioSel+'')).reduce((ss,ap)=>ss+ap.monto,0);
+  },0);
+  document.getElementById('rep-anio-stats').innerHTML=`
+    <div class="rep-stat"><div class="lbl">Total ingresos</div><div class="val verde">${M(totalIngA)}</div></div>
+    <div class="rep-stat"><div class="lbl">Total egresos</div><div class="val rojo">${M(totalEgrA)}</div></div>
+    <div class="rep-stat"><div class="lbl">Saldo anual</div><div class="val ${saldoAnual>=0?'verde':'rojo'}">${M(saldoAnual)}</div></div>
+    <div class="rep-stat"><div class="lbl">Ahorro anual</div><div class="val">${M(ahorroAnual)}</div></div>
+  `;
+}
+
+function renderReporteCategorias() {
+  const catSumas = {};
+  datos.egresos.forEach(x=>{ catSumas[x.cat]=(catSumas[x.cat]||0)+x.monto; });
+  const cats = Object.entries(catSumas).sort((a,b)=>b[1]-a[1]);
+  const total = cats.reduce((s,[,v])=>s+v,0);
+  const colores = ['#2E7D32','#EF5350','#1565C0','#FB8C00','#9C27B0','#00ACC1','#757575'];
+
+  if (chartRepCats) chartRepCats.destroy();
+  const ctx = document.getElementById('rep-chart-cats').getContext('2d');
+  chartRepCats = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels: cats.map(([c])=>c),
+      datasets:[{data:cats.map(([,v])=>v),backgroundColor:cats.map((_,i)=>colores[i%colores.length]),borderRadius:6}]
+    },
+    options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{font:{size:10}}},y:{ticks:{font:{size:11}}}}}
+  });
+
+  const lista = document.getElementById('rep-cats-lista');
+  lista.innerHTML = cats.map(([cat,val],i)=>`
+    <div style="background:var(--blanco);border-radius:var(--radio);padding:11px 14px;margin-bottom:8px;box-shadow:var(--sombra);display:flex;align-items:center;gap:10px;">
+      <div style="width:12px;height:12px;border-radius:50%;background:${colores[i%colores.length]};flex-shrink:0;"></div>
+      <div style="flex:1;font-size:13px;font-weight:600;">${cat}</div>
+      <div style="text-align:right;">
+        <div style="font-size:14px;font-weight:700;color:var(--rojo);">${M(val)}</div>
+        <div style="font-size:11px;color:var(--texto-sec);">${total>0?Math.round(val/total*100):0}%</div>
+      </div>
+    </div>
+  `).join('') || '<div class="vacio"><i class="fa-solid fa-chart-pie"></i><p>Sin datos de egresos</p></div>';
+}
+
+// ============================================================
+//  RECORDATORIOS
+// ============================================================
+if (!datos.recordatorios) datos.recordatorios = [];
+
+function abrirModalRecordatorio() {
+  document.getElementById('rec-titulo').value='';
+  document.getElementById('rec-hora').value='08:00';
+  document.getElementById('rec-nota').value='';
+  resetCats('modal-recordatorio');
+  abrirModal('modal-recordatorio');
+}
+
+function guardarRecordatorio() {
+  const titulo = document.getElementById('rec-titulo').value.trim();
+  const hora   = document.getElementById('rec-hora').value;
+  const nota   = document.getElementById('rec-nota').value.trim();
+  if (!titulo) { mostrarToast('Agrega un título'); return; }
+  const tipo = getCatSeleccionada('modal-recordatorio');
+  datos.recordatorios.push({id:uid(), titulo, hora, nota, tipo, activo:true});
+  guardar(); cerrarModal('modal-recordatorio'); renderRecordatorios();
+  mostrarToast('Recordatorio guardado ✓');
+  // Solicitar permiso de notificaciones del navegador
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+function toggleRecordatorio(id) {
+  const rec = datos.recordatorios.find(r=>r.id===id);
+  if (rec) { rec.activo = !rec.activo; guardar(); renderRecordatorios(); }
+}
+
+function eliminarRecordatorio(id) {
+  datos.recordatorios = datos.recordatorios.filter(r=>r.id!==id);
+  guardar(); renderRecordatorios();
+  mostrarToast('Recordatorio eliminado');
+}
+
+function renderRecordatorios() {
+  const activos = datos.recordatorios.filter(r=>r.activo).length;
+  const el = document.getElementById('rec-cuenta');
+  if(el) el.textContent = activos + ' activo' + (activos!==1?'s':'') + ' · ' + datos.recordatorios.length + ' en total';
+
+  const tipoEmoji = {'Diario':'📅','Semanal':'📆','Mensual':'🗓️','Una vez':'⚡'};
+  const cont = document.getElementById('lista-recordatorios');
+  if (!datos.recordatorios.length) {
+    cont.innerHTML='<div class="vacio"><i class="fa-regular fa-bell-slash"></i><p>Sin recordatorios aún</p></div>';
+    return;
+  }
+  cont.innerHTML = datos.recordatorios.map(r=>`
+    <div class="rec-item">
+      <div class="rec-icono">${tipoEmoji[r.tipo]||'🔔'}</div>
+      <div class="rec-info">
+        <div class="rec-titulo">${r.titulo}</div>
+        <div class="rec-detalle">${r.tipo} · ${r.hora}${r.nota?' · '+r.nota:''}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div class="toggle ${r.activo?'on':''} rec-toggle" onclick="toggleRecordatorio('${r.id}')"></div>
+        <button onclick="eliminarRecordatorio('${r.id}')" style="background:none;border:none;color:var(--rojo);cursor:pointer;font-size:14px;"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+//  INTELIGENCIA ARTIFICIAL (LOCAL)
+// ============================================================
+function renderIA() {
+  const hoy = new Date();
+  const mes = hoy.getMonth(), anio = hoy.getFullYear();
+  const mesAnt = mes===0?11:mes-1, anioAnt = mes===0?anio-1:anio;
+
+  const ingMes = datos.ingresos.filter(x=>{const d=new Date(x.fecha+'T00:00:00');return d.getMonth()===mes&&d.getFullYear()===anio;}).reduce((s,x)=>s+x.monto,0);
+  const egrMes = datos.egresos.filter(x=>{const d=new Date(x.fecha+'T00:00:00');return d.getMonth()===mes&&d.getFullYear()===anio;}).reduce((s,x)=>s+x.monto,0);
+  const ingAnt = datos.ingresos.filter(x=>{const d=new Date(x.fecha+'T00:00:00');return d.getMonth()===mesAnt&&d.getFullYear()===anioAnt;}).reduce((s,x)=>s+x.monto,0);
+  const egrAnt = datos.egresos.filter(x=>{const d=new Date(x.fecha+'T00:00:00');return d.getMonth()===mesAnt&&d.getFullYear()===anioAnt;}).reduce((s,x)=>s+x.monto,0);
+
+  const saldo = ingMes - egrMes;
+  const tasa = ingMes > 0 ? Math.round((saldo/ingMes)*100) : 0;
+  const catSumas = {};
+  datos.egresos.filter(x=>{const d=new Date(x.fecha+'T00:00:00');return d.getMonth()===mes&&d.getFullYear()===anio;}).forEach(x=>{catSumas[x.cat]=(catSumas[x.cat]||0)+x.monto;});
+  const mayorCat = Object.entries(catSumas).sort((a,b)=>b[1]-a[1])[0];
+  const totalAhorro = datos.metas.reduce((s,m)=>s+m.aportes.reduce((a,ap)=>a+ap.monto,0),0);
+
+  // RESUMEN
+  document.getElementById('ia-resumen').innerHTML = `
+    <div class="ia-card info">
+      <div class="ia-card-icon">📊</div>
+      <div>
+        <div class="ia-card-titulo">Resumen del mes actual</div>
+        <div class="ia-card-desc">
+          Ingresaste <strong>${M(ingMes)}</strong> y gastaste <strong>${M(egrMes)}</strong>. 
+          Tu saldo neto es <strong>${M(saldo)}</strong> con una tasa de ahorro del <strong>${tasa}%</strong>.
+          ${tasa>=20?'¡Excelente manejo financiero!':tasa>=10?'Vas bien, pero puedes mejorar.':'Necesitas reducir gastos para ahorrar más.'}
+        </div>
+      </div>
+    </div>
+  `;
+
+  // SUGERENCIAS
+  const sugerencias = [];
+  if (mayorCat && mayorCat[1] > ingMes*0.35) {
+    sugerencias.push({
+      emoji:'💡',
+      titulo:'Reduce gastos en ' + mayorCat[0],
+      desc:`Esta categoría representa el ${Math.round(mayorCat[1]/ingMes*100)}% de tus ingresos (${M(mayorCat[1])}). Intenta reducirla a menos del 30%.`
+    });
+  }
+  if (tasa < 10 && ingMes > 0) {
+    sugerencias.push({
+      emoji:'🐷',
+      titulo:'Regla del 50/30/20',
+      desc:`Con tus ingresos de ${M(ingMes)}, destina ${M(ingMes*0.5)} a necesidades, ${M(ingMes*0.3)} a deseos y ${M(ingMes*0.2)} al ahorro.`
+    });
+  }
+  if (datos.metas.length === 0) {
+    sugerencias.push({
+      emoji:'🎯',
+      titulo:'Crea una meta de ahorro',
+      desc:'Las personas con metas definidas ahorran hasta 3 veces más. Ve al módulo de Ahorro y crea tu primera meta.'
+    });
+  }
+  if (egrMes > egrAnt*1.2 && egrAnt > 0) {
+    sugerencias.push({
+      emoji:'📈',
+      titulo:'Tus gastos aumentaron',
+      desc:`Este mes gastaste un ${Math.round((egrMes-egrAnt)/egrAnt*100)}% más que el mes anterior. Revisa en qué categorías aumentó el gasto.`
+    });
+  }
+  if (!sugerencias.length) {
+    sugerencias.push({emoji:'🌟',titulo:'¡Muy bien!',desc:'Tu manejo financiero es óptimo este mes. Sigue así y alcanzarás tus metas.'});
+  }
+  document.getElementById('ia-sugerencias').innerHTML = sugerencias.map(s=>`
+    <div class="ia-card sugerencia">
+      <div class="ia-card-icon">${s.emoji}</div>
+      <div><div class="ia-card-titulo">${s.titulo}</div><div class="ia-card-desc">${s.desc}</div></div>
+    </div>`).join('');
+
+  // ALERTAS
+  const alertas = [];
+  if (saldo < 0) alertas.push({emoji:'🚨',titulo:'Saldo negativo',desc:`Gastaste ${M(Math.abs(saldo))} más de lo que ingresaste este mes. Revisa tus egresos urgente.`});
+  if (ingMes === 0) alertas.push({emoji:'⚠️',titulo:'Sin ingresos registrados',desc:'No tienes ingresos registrados este mes. Asegúrate de registrar todos tus entradas de dinero.'});
+  datos.metas.forEach(m=>{
+    const acum=m.aportes.reduce((s,a)=>s+a.monto,0);
+    const pct=acum/m.objetivo*100;
+    if(m.fecha){
+      const diasRestantes=Math.ceil((new Date(m.fecha)-new Date())/(1000*60*60*24));
+      if(diasRestantes>0&&diasRestantes<30&&pct<80){
+        alertas.push({emoji:'⏰',titulo:'Meta próxima a vencer: '+m.nombre,desc:`Te quedan ${diasRestantes} días y solo llevas el ${Math.round(pct)}%. Necesitas aportar ${M(m.objetivo-acum)} más.`});
+      }
+    }
+  });
+  if(!alertas.length) alertas.push({emoji:'✅',titulo:'Todo en orden',desc:'No hay alertas financieras en este momento. ¡Continúa con tus buenos hábitos!'});
+  document.getElementById('ia-alertas').innerHTML = alertas.map(a=>`
+    <div class="ia-card ${a.emoji==='✅'?'sugerencia':'alerta'}">
+      <div class="ia-card-icon">${a.emoji}</div>
+      <div><div class="ia-card-titulo">${a.titulo}</div><div class="ia-card-desc">${a.desc}</div></div>
+    </div>`).join('');
+
+  // PROYECCIÓN 6 MESES
+  const promedioAhorro = ingMes > 0 ? Math.max(0, saldo) : 0;
+  const proyLabels = [], proyVals = [];
+  const nombMeses2 = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  let acumProyeccion = totalAhorro;
+  for(let i=1;i<=6;i++){
+    const m2 = new Date(anio, mes+i, 1);
+    proyLabels.push(nombMeses2[m2.getMonth()]);
+    acumProyeccion += promedioAhorro;
+    proyVals.push(parseFloat(acumProyeccion.toFixed(2)));
+  }
+
+  if (chartIAProyeccion) chartIAProyeccion.destroy();
+  const ctx = document.getElementById('ia-chart-proyeccion').getContext('2d');
+  chartIAProyeccion = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels:proyLabels,
+      datasets:[{
+        label:'Ahorro proyectado',
+        data:proyVals,
+        borderColor:'#2E7D32',
+        backgroundColor:'rgba(46,125,50,.1)',
+        fill:true,
+        tension:.4,
+        pointBackgroundColor:'#2E7D32',
+        pointRadius:5
+      }]
+    },
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}}},y:{beginAtZero:true,ticks:{font:{size:10}}}}}
+  });
+}
+
+// ============================================================
+//  ACTUALIZAR BOTTOM NAV (reemplazar uno de los iconos con menú +)
+// ============================================================
+(function actualizarNavbar() {
+  // Reemplazar el botón de ahorro en el nav con un menú desplegable
+  const nav = document.querySelector('.bottom-nav');
+  if (!nav) return;
+
+  // Añadir nav items adicionales al FAB menu
+  const fabMenu = document.getElementById('fab-menu');
+  if (fabMenu) {
+    const extra = document.createElement('div');
+    extra.innerHTML = `
+      <div class="divider" style="margin:4px 0;"></div>
+      <button class="fab-opcion" onclick="cerrarFab();irA('p-buscar','')"><i class="fa-solid fa-magnifying-glass" style="color:var(--azul);"></i> Búsqueda avanzada</button>
+      <button class="fab-opcion" onclick="cerrarFab();irA('p-reportes','')"><i class="fa-solid fa-chart-bar" style="color:var(--naranja);"></i> Reportes</button>
+      <button class="fab-opcion" onclick="cerrarFab();irA('p-recordatorios','')"><i class="fa-solid fa-bell" style="color:var(--rojo);"></i> Recordatorios</button>
+      <button class="fab-opcion" onclick="cerrarFab();irA('p-ia','')"><i class="fa-solid fa-robot" style="color:#9C27B0;"></i> Asesor IA</button>
+    `;
+    fabMenu.appendChild(extra);
+  }
+})();
+
+// Animación shake para PIN incorrecto
+const shakeStyle = document.createElement('style');
+shakeStyle.textContent = `@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}`;
+document.head.appendChild(shakeStyle);
+</script>
+</body>
+</html>
